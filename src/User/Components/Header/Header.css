@@ -1,0 +1,104 @@
+/* General header styles */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: var(--primary-dark);
+  color: var(--text-color);
+}
+
+/* Slide and logo styles */
+.slide {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 20px;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.logo span {
+  color: var(--accent);
+}
+
+/* Navigation styles */
+.navigation {
+  flex-grow: 1; /* Takes up remaining space */
+  text-align: center; /* Centers nav items on small screens */
+}
+
+.navigation ul {
+  list-style: none;
+  display: flex;
+  justify-content: center; /* Centers nav items */
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+.navigation ul li {
+  display: inline;
+}
+
+.navigation ul li a {
+  text-decoration: none;
+  color: var(--text-color);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.navigation ul li a:hover {
+  color: var(--primary-light);
+}
+
+/* User profile styles */
+.user-profile {
+  display: flex;
+  align-items: center;
+}
+
+.user-profile img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+/* Responsive styles */
+@media (max-width: 950px) {
+  .slide {
+    margin-right: auto; /* Push toggle button to the left */
+  }
+
+  .navigation {
+    display: none; /* Hide nav links by default */
+    flex-basis: 100%; /* Full width on smaller screens */
+    text-align: center;
+  }
+
+  .navigation.active {
+    display: flex; /* Show nav links when active */
+  }
+
+  .navigation ul {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .navigation ul li {
+    display: block;
+  }
+
+  .toggle-button {
+    margin-right: 0; /* Remove margin on small screens */
+  }
+}
