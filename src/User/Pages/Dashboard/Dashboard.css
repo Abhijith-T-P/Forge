@@ -1,7 +1,10 @@
+/* src/Components/Dashboard/Dashboard.css */
+
 .dashboard-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
+  background-color: var(--background);
 }
 
 .search-section {
@@ -14,32 +17,35 @@
   flex: 1;
   padding: 10px;
   font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-.search-section button {
-  background-color: var(--primary);
-  color: var(--text-color);
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  font-size: 16px;
-  margin-left: 10px;
+.search-section input:focus {
+  outline: none;
+  border-color: var(--primary);
 }
 
 .item-details {
   margin-top: 20px;
   border: 1px solid #ccc;
   padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .item-details img {
   max-width: 100%;
   height: auto;
   margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
 }
 
 .item-details h3 {
   margin-top: 0;
+  color: var(--primary);
 }
 
 .item-details ul {
@@ -49,10 +55,17 @@
 
 .item-details ul li {
   margin-bottom: 5px;
+  color: var(--text-color);
 }
 
 .no-item-found {
-  color: red;
+  color: var(--red);
+  text-align: center;
+}
+
+.zero-stock {
+  background-color: var(--accent);
+  border-color: var(--accent-dark);
 }
 
 @media (max-width: 768px) {
@@ -60,8 +73,11 @@
     flex-direction: column;
   }
 
-  .search-section button {
-    margin-top: 10px;
-    margin-left: 0;
+  .search-section input {
+    margin-bottom: 10px;
+  }
+
+  .item-details {
+    padding: 15px;
   }
 }

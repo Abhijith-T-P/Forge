@@ -1,57 +1,18 @@
+// src/Components/Dashboard/Dashboard.js
+
 import React, { useState } from 'react';
-import './Dashboard.css'; // Import your CSS file for styling
+import dummyData from '../../Components/Assets/Data/dummyData';
+import './Dashboard.css';
 
 const Dashboard = () => {
-  const [itemCode, setItemCode] = useState('');
-  const [itemDetails, setItemDetails] = useState(null); // State to hold item details
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const handleSearch = () => {
-    // Dummy data - replace with actual logic to fetch item details from database or API
-    const dummyData = [
-      {
-        id: '1',
-        itemName: 'Sample Chair',
-        imageUrl: 'https://via.placeholder.com/150',
-        inStock: true,
-        colorsAvailable: ['Red', 'Blue', 'Green'],
-        stockByColor: {
-          Red: 10,
-          Blue: 5,
-          Green: 3,
-        },
-      },
-      {
-        id: '2',
-        itemName: 'Modern Desk',
-        imageUrl: 'https://via.placeholder.com/150',
-        inStock: false,
-        colorsAvailable: ['Black', 'White'],
-        stockByColor: {
-          Black: 0,
-          White: 0,
-        },
-      },
-      {
-        id: '3',
-        itemName: 'Office Lamp',
-        imageUrl: 'https://via.placeholder.com/150',
-        inStock: true,
-        colorsAvailable: ['Yellow', 'Silver'],
-        stockByColor: {
-          Yellow: 8,
-          Silver: 12,
-        },
-      },
-    ];
-
-    // Simulating fetching data based on item code (in real app, fetch from backend)
-    const foundItem = dummyData.find(item => item.id === itemCode);
-    if (foundItem) {
-      setItemDetails(foundItem);
-    } else {
-      setItemDetails(null); // Reset itemDetails if item code not found
-    }
-  };
+  // Filter items based on search term
+  const filteredItems = dummyData.filter(
+    (item) =>
+      item.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.itemCode.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="dashboard-container">
@@ -59,35 +20,40 @@ const Dashboard = () => {
       <div className="search-section">
         <input
           type="text"
-          value={itemCode}
-          onChange={(e) => setItemCode(e.target.value)}
-          placeholder="Enter item code"
+          placeholder="Search by name or code..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-bar"
         />
-        <button onClick={handleSearch}>Search</button>
       </div>
 
-      {itemDetails && (
-        <div className="item-details">
-          <h3>{itemDetails.itemName}</h3>
-          <img src={itemDetails.imageUrl} alt={itemDetails.itemName} />
-          <p>Availability: {itemDetails.inStock ? 'In Stock' : 'Out of Stock'}</p>
-
-          <h4>Colors Available:</h4>
-          <ul>
-            {itemDetails.colorsAvailable.map((color, index) => (
-              <li key={index}>
-                {color} - {itemDetails.stockByColor[color]} available
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {itemDetails === null && (
-        <p className="no-item-found">No item found for the entered item code.</p>
+      {filteredItems.length > 0 ? (
+        filteredItems.map((item) => (
+          <div key={item.itemCode} className={`item-details ${calculateStockClass(item)}`}>
+            <h3>{item.itemName}</h3>
+            <img src={item.imageUrl} alt={item.itemName} />
+            <p>Availability: {Object.values(item.stockByColor).reduce((a, b) => a + b, 0) > 0 ? 'In Stock' : 'Out of Stock'}</p>
+            <h4>Colors Available:</h4>
+            <ul>
+              {Object.keys(item.stockByColor).map((color, index) => (
+                <li key={index}>
+                  {color} - {item.stockByColor[color]} available
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      ) : (
+        <p className="no-item-found">No item found for the entered name or code.</p>
       )}
     </div>
   );
+};
+
+// Function to calculate CSS class based on total stock count
+const calculateStockClass = (item) => {
+  const totalStock = Object.values(item.stockByColor).reduce((a, b) => a + b, 0);
+  return totalStock === 0 ? 'zero-stock' : '';
 };
 
 export default Dashboard;
