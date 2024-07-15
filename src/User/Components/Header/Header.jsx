@@ -12,7 +12,7 @@ const Header = ({ onToggleSidebar }) => {
           </svg>
         </button>
         <div className="logo">
-          Stock<span>Forge</span>
+        Supply<span>Craft</span>
         </div>
       </div>
       <nav className="navigation">
