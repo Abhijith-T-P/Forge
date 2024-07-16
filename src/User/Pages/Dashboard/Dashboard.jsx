@@ -1,14 +1,41 @@
-// src/Components/Dashboard/Dashboard.js
-
-import React, { useState } from 'react';
-import dummyData from '../../Components/Assets/Data/dummyData';
+import React, { useState, useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../../config/firebase';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [stockItems, setStockItems] = useState({});
+
+  useEffect(() => {
+    const fetchStockItems = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'Stock'));
+        const items = {};
+        querySnapshot.forEach((doc) => {
+          const item = doc.data();
+          const lowerCaseItemCode = item.itemCode.toLowerCase();
+          if (items[lowerCaseItemCode]) {
+            // Merge finishedByColor if item already exists
+            items[lowerCaseItemCode].finishedByColor = {
+              ...items[lowerCaseItemCode].finishedByColor,
+              ...item.finishedByColor
+            };
+          } else {
+            items[lowerCaseItemCode] = { ...item, id: doc.id };
+          }
+        });
+        setStockItems(items);
+      } catch (error) {
+        console.error('Error fetcxhing stock items:', error);
+      }
+    };
+
+    fetchStockItems();
+  }, []);
 
   // Filter items based on search term
-  const filteredItems = dummyData.filter(
+  const filteredItems = Object.values(stockItems).filter(
     (item) =>
       item.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.itemCode.toLowerCase().includes(searchTerm.toLowerCase())
@@ -29,15 +56,15 @@ const Dashboard = () => {
 
       {filteredItems.length > 0 ? (
         filteredItems.map((item) => (
-          <div key={item.itemCode} className={`item-details ${calculateStockClass(item)}`}>
+          <div key={item.id} className={`item-details ${calculateStockClass(item)}`}>
             <h3>{item.itemName}</h3>
-            {/* <img src={item.imageUrl} alt={item.itemName} /> */}
-            <p>Availability: {Object.values(item.stockByColor).reduce((a, b) => a + b, 0) > 0 ? 'In Stock' : 'Out of Stock'}</p>
+            <p>Item Code: {item.itemCode}</p>
+            <p>Availability: {Object.values(item.finishedByColor || {}).reduce((a, b) => a + b, 0) > 0 ? 'In Stock' : 'Out of Stock'}</p>
             <h4>Colors Available:</h4>
             <ul>
-              {Object.keys(item.stockByColor).map((color, index) => (
+              {Object.keys(item.finishedByColor || {}).map((color, index) => (
                 <li key={index}>
-                  {color} - {item.stockByColor[color]} available
+                  {color} - {item.finishedByColor[color]} available
                 </li>
               ))}
             </ul>
@@ -52,7 +79,7 @@ const Dashboard = () => {
 
 // Function to calculate CSS class based on total stock count
 const calculateStockClass = (item) => {
-  const totalStock = Object.values(item.stockByColor).reduce((a, b) => a + b, 0);
+  const totalStock = Object.values(item.finishedByColor || {}).reduce((a, b) => a + b, 0);
   return totalStock === 0 ? 'zero-stock' : '';
 };
 

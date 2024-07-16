@@ -18,7 +18,7 @@ const Header = ({ onToggleSidebar }) => {
       <nav className="navigation">
         <ul>
           <li><Link to="./">Dashboard</Link></li>
-          <li><Link to="./Add">AddItem</Link></li>
+          <li><Link to="./Add/AddItem">Work</Link></li>
           <li><Link to="./StockList">StockList</Link></li>
          
         </ul>

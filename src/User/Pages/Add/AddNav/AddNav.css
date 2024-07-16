@@ -55,4 +55,17 @@
       padding: 8px 12px;
     }
   }
+  @media (max-width: 370px) {
+    .navContainer {
+        justify-content: center;
+    }
+    .navItems ul {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .navItems a {
+      padding: 8px 12px;
+    }
+  }
   

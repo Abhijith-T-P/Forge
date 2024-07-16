@@ -9,13 +9,13 @@ const AddNav = () => {
         <div className="navItems">
           <ul>
             <li>
-              <NavLink to="/Add/AddItem">Work</NavLink>
+              <NavLink to="/Add/AddItem">Cutting</NavLink>
             </li>
             <li>
-              <NavLink to="/Add/Product">Product</NavLink>
+              <NavLink to="/Add/Tapped">Tapped</NavLink>
             </li>
             <li>
-              <NavLink to="/Add/Material">Material</NavLink>
+              <NavLink to="/Add/Finished">Finished</NavLink>
             </li>
           </ul>
         </div>

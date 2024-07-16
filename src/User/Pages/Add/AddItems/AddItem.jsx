@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import './AddItem.css';
+import { addDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
+import { db } from '../../../../config/firebase';
 
 const AddItem = () => {
   const [itemName, setItemName] = useState('');
   const [itemCode, setItemCode] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
   const [colorsAvailable, setColorsAvailable] = useState([]);
   const [colorInput, setColorInput] = useState('');
   const [colorQuantity, setColorQuantity] = useState('');
@@ -21,12 +22,12 @@ const AddItem = () => {
     setColorsAvailable(colorsAvailable.filter(color => color.colorName !== colorToRemove));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newItem = {
       itemName,
       itemCode,
-      imageUrl,
+     
       inStock: colorsAvailable.some(color => color.quantity > 0),
       stockByColor: colorsAvailable.reduce((acc, color) => {
         acc[color.colorName] = color.quantity;
@@ -34,13 +35,34 @@ const AddItem = () => {
       }, {}),
     };
 
-    // Simulate adding item to stock (replace with actual backend call)
-    console.log('New item added:', newItem);
+    try {
+      // Add new item to Tapped collection
+      await addDoc(collection(db, "Cutting"), newItem);
+      console.log('New item added to Tapped:', newItem);
+
+      // Update stock in Work collection
+      const querySnapshot = await getDocs(collection(db, 'Work'));
+      querySnapshot.forEach(async (doc) => {
+        const workItem = doc.data().newItem;
+        if (workItem.itemCode === itemCode) {
+          const updatedStockByColor = { ...workItem.stockByColor };
+          colorsAvailable.forEach(color => {
+            if (updatedStockByColor[color.colorName] >= color.quantity) {
+              updatedStockByColor[color.colorName] -= color.quantity;
+            }
+          });
+
+          // Update the item in the Work collection
+          await updateDoc(doc.ref, { 'newItem.stockByColor': updatedStockByColor });
+        }
+      });
+    } catch (error) {
+      console.error('Error adding item:', error);
+    }
 
     // Reset form
     setItemName('');
     setItemCode('');
-    setImageUrl('');
     setColorsAvailable([]);
   };
 
@@ -68,16 +90,7 @@ const AddItem = () => {
             required
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="imageUrl">Image URL:</label>
-          <input
-            type="text"
-            id="imageUrl"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            required
-          />
-        </div>
+
         <div className="form-group">
           <label htmlFor="colorInput">Colors Available:</label>
           <div className="color-input">

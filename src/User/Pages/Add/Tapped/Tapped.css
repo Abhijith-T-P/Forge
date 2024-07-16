@@ -1,0 +1,44 @@
+.tapped-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .item-list .item {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .item-list .item input {
+    margin-top: 10px;
+    padding: 5px;
+    width: 100%;
+  }
+  
+  .item-list .item button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: var(--primary);
+    color: var(--text-color);
+    border: none;
+    cursor: pointer;
+  }
+  
+  .finished-section {
+    margin-top: 20px;
+  }
+  
+  .finished-section ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .finished-section ul li {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+  
