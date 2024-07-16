@@ -29,7 +29,7 @@ const StockList = () => {
         {filteredItems.map((item) => (
           <div key={item.itemCode} className={`stock-item ${calculateStockClass(item)}`}>
             <Link to={`/item/${item.itemCode}`}>
-              <img src={item.imageUrl} alt={item.itemName} />
+              {/* <img src={item.imageUrl} alt={item.itemName} /> */}
               <h3>{item.itemName}</h3>
               <p>Item Code: {item.itemCode}</p>
               <p>Total Stock: {Object.values(item.stockByColor).reduce((a, b) => a + b, 0)}</p>

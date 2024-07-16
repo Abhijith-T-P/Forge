@@ -31,7 +31,7 @@ const Dashboard = () => {
         filteredItems.map((item) => (
           <div key={item.itemCode} className={`item-details ${calculateStockClass(item)}`}>
             <h3>{item.itemName}</h3>
-            <img src={item.imageUrl} alt={item.itemName} />
+            {/* <img src={item.imageUrl} alt={item.itemName} /> */}
             <p>Availability: {Object.values(item.stockByColor).reduce((a, b) => a + b, 0) > 0 ? 'In Stock' : 'Out of Stock'}</p>
             <h4>Colors Available:</h4>
             <ul>

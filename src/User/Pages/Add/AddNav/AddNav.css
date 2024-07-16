@@ -1,0 +1,58 @@
+/* src/Components/AddNav/AddNav.css */
+
+.AddNav {
+    background-color: var(--background);
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .navContainer {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+  }
+  
+  .navItems ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .navItems li {
+    display: inline;
+  }
+  
+  .navItems a {
+    text-decoration: none;
+    color: var(--text-color);
+    padding: 10px 15px;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .navItems a:hover {
+    background-color: var(--primary-light);
+    color: white;
+  }
+  
+  .navItems a.active {
+    background-color: var(--primary);
+    color: white;
+  }
+  
+  @media (max-width: 768px) {
+    .navItems ul {
+      flex-direction: row;
+      align-items: center;
+    }
+  
+    .navItems a {
+      padding: 8px 12px;
+    }
+  }
+  
