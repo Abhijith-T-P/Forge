@@ -1,71 +1,45 @@
-/* src/Components/AddNav/AddNav.css */
-
-.AddNav {
+.add-nav {
+    display: flex;
+    justify-content: space-around;
     background-color: var(--background);
-    padding: 10px 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
   }
   
-  .navContainer {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: start;
-    align-items: center;
-  }
-  
-  .navItems ul {
-    list-style: none;
-    display: flex;
-    gap: 20px;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .navItems li {
-    display: inline;
-  }
-  
-  .navItems a {
+  .nav-button {
     text-decoration: none;
     color: var(--text-color);
-    padding: 10px 15px;
-    border-radius: 4px;
+    padding: 10px 20px;
+    border: 1px solid var(--accent); /* Accent color for border */
+    border-radius: 5px;
+    background-color: #fff;
     transition: background-color 0.3s, color 0.3s;
+    margin: 10px; /* Increased margin between buttons */
+    flex: 1 0 auto; /* Allow buttons to grow and shrink */
+    text-align: center; /* Center text in buttons */
   }
   
-  .navItems a:hover {
-    background-color: var(--primary-light);
-    color: white;
+  .nav-button:hover {
+    background-color: var(--accent); /* Accent color on hover */
+    color: #fff; /* White text color on hover */
   }
   
-  .navItems a.active {
-    background-color: var(--primary);
-    color: white;
+  .active {
+    background-color: var(--accent); /* Accent color for active button */
+    color: #fff; /* White text color for active button */
+    border: 1px solid var(--accent); /* Accent color for active button border */
   }
   
   @media (max-width: 768px) {
-    .navItems ul {
-      flex-direction: row;
+    .add-nav {
+      flex-direction: column; /* Stack buttons vertically on smaller screens */
       align-items: center;
     }
   
-    .navItems a {
-      padding: 8px 12px;
-    }
-  }
-  @media (max-width: 370px) {
-    .navContainer {
-        justify-content: center;
-    }
-    .navItems ul {
-      flex-direction: column;
-      align-items: center;
-    }
-  
-    .navItems a {
-      padding: 8px 12px;
+    .nav-button {
+      flex: 1 0 80%; /* Make buttons wider on smaller screens */
+      margin: 15px 0; /* Increased vertical margin */
     }
   }
   

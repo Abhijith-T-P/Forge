@@ -1,76 +1,90 @@
 /* src/Components/StockList/StockList.css */
 
 .stock-list {
-  padding:  50px;
+  padding: 20px;
   background-color: var(--background);
 }
 
-.search-bar {
+.stock-table {
   width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.stock-table th,
+.stock-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.stock-table th {
+  background-color: var(--primary);
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+
+
+.stock-table tr:hover {
+  background-color: var(--accent);
+}
+
+.stock-zero {
+  background-color: #ffcccb;
+}
+
+.stock-non-zero {
+  background-color: var(--primary-light);
+}
+
+.search-bar {
+  width: 98%;
   padding: 10px;
   margin-bottom: 20px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--primary-dark);
   border-radius: 4px;
-  font-size: 3rem;
+  font-size: 16px;
+  background-color: var(--background);
+  color: var(--text-color);
 }
 
 .search-bar:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 5px var(--primary-light);
 }
 
-.item-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+.stock-zero {
+  background-color: red; /* Red for zero values */
+  color: white; /* Optional: to make text readable */
 }
 
-.stock-item {
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
 
-.stock-item img {
-  width: 100%;
-  height: auto;
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 15px;
-}
 
-.stock-item h3 {
-  color: var(--primary);
-  margin: 10px 0;
-}
-
-.stock-item p {
-  color: var(--text-color);
-  margin: 5px 0;
-}
-
-.stock-item a {
-  text-decoration: none;
-  color: var(--text-color);
-}
-
-.stock-item a:hover {
-  color: var(--primary);
-}
-
-.zero-stock {
-  background-color: var(--red);
-  color: var(--text-color);
+.stock-zero-row {
+  background-color: red; /* Red for entire row when all colors are zero */
+  color: white; /* Optional: to make text readable */
 }
 
 @media (max-width: 768px) {
-  .item-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+  .stock-table {
+    font-size: 12px;
   }
 
-  .stock-item {
-    padding: 15px;
+  .stock-table th,
+  .stock-table td {
+    padding: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stock-table {
+    font-size: 10px;
+  }
+
+  .stock-table th,
+  .stock-table td {
+    padding: 4px;
   }
 }

@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AddItem.css';
 import { addDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 
 const AddItem = () => {
-  const [itemName, setItemName] = useState('');
+  const [currentDate, setCurrentDate] = useState('');
   const [itemCode, setItemCode] = useState('');
   const [colorsAvailable, setColorsAvailable] = useState([]);
   const [colorInput, setColorInput] = useState('');
   const [colorQuantity, setColorQuantity] = useState('');
+
+  const itemCodes = Array.from({ length: 10 }, (_, i) => `40${i + 4}`);
+
+  useEffect(() => {
+    const today = new Date();
+    setCurrentDate(today.toISOString().split('T')[0]);
+  }, []);
 
   const handleAddColor = () => {
     if (colorInput && colorQuantity && !colorsAvailable.find(color => color.colorName === colorInput)) {
@@ -25,9 +32,8 @@ const AddItem = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newItem = {
-      itemName,
+      date: currentDate,
       itemCode,
-     
       inStock: colorsAvailable.some(color => color.quantity > 0),
       stockByColor: colorsAvailable.reduce((acc, color) => {
         acc[color.colorName] = color.quantity;
@@ -36,11 +42,9 @@ const AddItem = () => {
     };
 
     try {
-      // Add new item to Tapped collection
       await addDoc(collection(db, "Cutting"), newItem);
-      console.log('New item added to Tapped:', newItem);
+      console.log('New item added to Cutting:', newItem);
 
-      // Update stock in Work collection
       const querySnapshot = await getDocs(collection(db, 'Work'));
       querySnapshot.forEach(async (doc) => {
         const workItem = doc.data().newItem;
@@ -51,75 +55,84 @@ const AddItem = () => {
               updatedStockByColor[color.colorName] -= color.quantity;
             }
           });
-
-          // Update the item in the Work collection
           await updateDoc(doc.ref, { 'newItem.stockByColor': updatedStockByColor });
         }
       });
+
+      // Reset form
+      setItemCode('');
+      setColorsAvailable([]);
+      alert("Stock added successfully!");
     } catch (error) {
       console.error('Error adding item:', error);
+      alert("Error adding stock. Please try again.");
     }
-
-    // Reset form
-    setItemName('');
-    setItemCode('');
-    setColorsAvailable([]);
   };
 
   return (
     <div className="add-item-container">
-      <h2>Add New Item to Stock</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="itemName">Item Name:</label>
+      <h2 className="add-item-header">Add New Stock</h2>
+      <form onSubmit={handleSubmit} className="add-item-form">
+        <div className="add-item-row">
+          <label htmlFor="date">Date</label>
           <input
-            type="text"
-            id="itemName"
-            value={itemName}
-            onChange={(e) => setItemName(e.target.value)}
+            type="date"
+            id="date"
+            value={currentDate}
+            onChange={(e) => setCurrentDate(e.target.value)}
             required
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="itemCode">Item Code:</label>
-          <input
-            type="text"
+        <div className="add-item-row">
+          <label htmlFor="itemCode">Item Code</label>
+          <select
             id="itemCode"
             value={itemCode}
             onChange={(e) => setItemCode(e.target.value)}
             required
-          />
+            className="dropdown"
+          >
+            <option value="" disabled>Select item code</option>
+            {itemCodes.map(code => (
+              <option key={code} value={code}>{code}</option>
+            ))}
+          </select>
         </div>
-
-        <div className="form-group">
-          <label htmlFor="colorInput">Colors Available:</label>
-          <div className="color-input">
-            <input
-              type="text"
-              id="colorInput"
-              value={colorInput}
-              placeholder="Color name"
-              onChange={(e) => setColorInput(e.target.value)}
-            />
+        {colorsAvailable.map((color, index) => (
+          <div key={index} className="add-item-row">
+            <label>{color.colorName.toUpperCase()}</label>
             <input
               type="number"
-              id="colorQuantity"
-              value={colorQuantity}
-              placeholder="Quantity"
-              onChange={(e) => setColorQuantity(e.target.value)}
+              value={color.quantity}
+              onChange={(e) => {
+                const updatedColors = [...colorsAvailable];
+                updatedColors[index].quantity = e.target.value;
+                setColorsAvailable(updatedColors);
+              }}
             />
-            <button type="button" onClick={handleAddColor}>Add Color</button>
+            <button type="button" onClick={() => handleRemoveColor(color.colorName)} className="remove-btn">Remove</button>
           </div>
-          <div className="colors-list">
-            {colorsAvailable.map((color, index) => (
-              <div key={index} className="color-item">
-                {color.colorName} - {color.quantity}
-                <button type="button" onClick={() => handleRemoveColor(color.colorName)}>Remove</button>
-              </div>
-            ))}
-          </div>
+        ))}
+        <div className="add-item-row">
+          <input
+            type="text"
+            value={colorInput}
+            onChange={(e) => setColorInput(e.target.value)}
+            placeholder="Color name"
+            className="color-input"
+          />
+          <input
+            type="number"
+            value={colorQuantity}
+            onChange={(e) => setColorQuantity(e.target.value)}
+            placeholder="Quantity"
+            className="quantity-input"
+          />
+          <button type="button" onClick={handleAddColor} className="add-color-btn">Add Color</button>
         </div>
-        <button type="submit" className="submit-button">Add Item</button>
+        <div className="add-item-row">
+          <button type="submit" className="submit-button">Add Stock</button>
+        </div>
       </form>
     </div>
   );

@@ -1,27 +1,21 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import './AddNav.css';
+import './AddNav.css'; // Add your styles here
 
 const AddNav = () => {
   return (
-    <div className='AddNav'>
-      <div className="navContainer">
-        <div className="navItems">
-          <ul>
-            <li>
-              <NavLink to="/Add/AddItem">Cutting</NavLink>
-            </li>
-            <li>
-              <NavLink to="/Add/Tapped">Tapped</NavLink>
-            </li>
-            <li>
-              <NavLink to="/Add/Finished">Finished</NavLink>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+    <nav className="add-nav">
+      <NavLink to="./AddItem" className="nav-button" activeClassName="active">
+        Cutting
+      </NavLink>
+      <NavLink to="./TapePage" className="nav-button" activeClassName="active">
+        Taping
+      </NavLink>
+      <NavLink to="./FinishedPage" className="nav-button" activeClassName="active">
+        Finished
+      </NavLink>
+    </nav>
   );
-}
+};
 
 export default AddNav;
