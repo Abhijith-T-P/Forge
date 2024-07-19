@@ -1,12 +1,13 @@
 :root {
   --primary: #2BED92;
-  --primary-light: #6efcb3; /* Approximation for lightened primary */
-  --primary-dark: #25d47b;  /* Approximation for darkened primary */
-  --accent: #FFD700;         /* Adjusted accent color */
+  --primary-light: #6efcb3; 
+  --primary-dark: #25d47b; 
+  --accent: #FFD700;         
   --background: #F5F5F5;
   --text-color: #333;
-  --red: #ff00007d;            /* New variable for red color */
-  /* --red: #FF0000;            New variable for red color */
+  --red: #ff00007d;     
+  --highlight: #d0e9f3;
+  --border-color: #b4b4b4;     
 }
 
 

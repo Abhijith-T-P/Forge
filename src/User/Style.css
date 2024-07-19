@@ -1,15 +1,4 @@
-:root {
-  --primary: #2BED92;
-  --primary-light: #6efcb3; /* Approximation for lightened primary */
-  --primary-dark: #25d47b;  /* Approximation for darkened primary */
-  --accent: #FFC107;
-  --background: #F5F5F5;
-  --text-color: #333;
-}
 
-body {
-  margin: 0;
-}
 
 .app-container {
   display: flex;

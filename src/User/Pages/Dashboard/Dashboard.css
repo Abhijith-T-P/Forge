@@ -1,160 +1,146 @@
+:root {
+  --primary: #2BED92;
+  --primary-light: #6efcb3;
+  --primary-dark: #25d47b;
+  --highlight: #f0f8ff;
+  --border-color: #ddd;
+  --text-color: #333;
+  --red: #ff0000;
+}
 
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--background);
+  color: var(--text-color);
+}
 
 .dashboard {
   max-width: 1200px;
-  margin: 20px auto;
-  padding: 0 20px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-.search-form {
-  margin-bottom: 20px;
-  display: flex;
-  gap: 10px;
+.excel-toolbar {
+  background-color: var(--primary-dark);
+  padding: 10px;
+  border-radius: 5px 5px 0 0;
 }
 
 .search-input {
-  flex-grow: 1;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid var(--primary);
+  width: 98%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  font-size: 14px;
+}
+
+.excel-sheet {
   background-color: white;
-}
-
-.search-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.search-button:hover {
-  background-color: var(--primary-dark);
-}
-
-.table-container {
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 5px 5px;
+  margin-bottom: 20px;
   overflow-x: auto;
 }
 
-table {
+.excel-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
 }
 
-th, td {
-  border: 1px solid var(--primary-light);
-  padding: 12px;
+.excel-table th,
+.excel-table td {
+  border: 1px solid var(--border-color);
+  padding: 8px;
   text-align: center;
 }
 
-.item-header {
-  background-color: var(--primary);
-  color: white;
-}
-
-.code-header {
+.excel-table th {
   background-color: var(--primary-light);
+  font-weight: bold;
 }
 
 .label {
-  background-color: var(--accent);
+  background-color: var(--primary-light);
   font-weight: bold;
 }
 
-.quantity {
-  background-color: var(--primary-light);
+.color-cell {
+  font-weight: bold;
 }
 
-.out-of-stock {
-  background-color: #FF6347;
+.quantity,
+.finished,
+.cutting,
+.taping,
+.total {
+  background-color: var(--highlight);
 }
 
-.in-stock {
+.quantity.out-of-stock,
+.cutting.out-of-stock,
+.taping.out-of-stock,
+.total.out-of-stock {
+  color: var(--red);
+}
+
+.sheet-title {
   background-color: var(--primary);
   color: white;
-}
-
-.items-list {
-  margin-top: 30px;
-}
-
-.items-list h3 {
-  font-size: 18px;
-  color: var(--primary);
-  margin-bottom: 10px;
-}
-
-.items-list ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.items-list li {
   padding: 10px;
-  border: 1px solid var(--primary-light);
-  margin-bottom: 5px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  margin: 0;
+  border-radius: 5px 5px 0 0;
 }
 
-.items-list .item-code {
+.items-list .excel-table tr:hover {
+  background-color: var(--highlight);
+  cursor: pointer;
+}
+
+.item-code {
   font-weight: bold;
 }
 
-.items-list .item-details {
-  font-style: italic;
+.item-status {
+  font-weight: bold;
+}
+
+.item-status.out-of-stock {
+  color: var(--red);
+}
+
+.no-item-found {
+  padding: 20px;
+  text-align: center;
+  color: var(--red);
 }
 
 @media (max-width: 768px) {
-  .search-form {
-    flex-direction: column;
+  .dashboard {
+    padding: 10px;
   }
 
-  .search-input, .search-button {
-    width: 100%;
-  }
-
-  th, td {
-    padding: 8px;
+  .excel-table {
     font-size: 14px;
   }
 
-  .items-list li {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .items-list .item-code {
-    margin-bottom: 5px;
-  }
-
-  .items-list .item-details {
-    font-size: 14px;
+  .excel-table th,
+  .excel-table td {
+    padding: 6px;
   }
 }
 
 @media (max-width: 480px) {
-  .search-input, .search-button {
-    font-size: 14px;
-  }
-
-  th, td {
-    padding: 6px;
+  .excel-table {
     font-size: 12px;
   }
 
-  .items-list h3 {
+  .excel-table th,
+  .excel-table td {
+    padding: 4px;
+  }
+
+  .sheet-title {
     font-size: 16px;
-  }
-
-  .items-list .item-details {
-    font-size: 12px;
   }
 }
