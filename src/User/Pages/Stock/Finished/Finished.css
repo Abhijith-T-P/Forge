@@ -1,0 +1,66 @@
+.finished-list {
+  padding: 20px;
+  background-color: var(--background);
+}
+
+.search-bar {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--text-color);
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.item-table-container {
+  margin-bottom: 20px;
+}
+
+.excel-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.excel-table th, .excel-table td {
+  border: 1px solid var(--text-color);
+  padding: 10px;
+  text-align: center;
+}
+
+.excel-table th {
+  background-color: var(--primary);
+  color: var(--text-color);
+}
+
+.color-cell {
+  text-transform: capitalize;
+}
+
+.quantity {
+  text-align: right;
+}
+
+.finished-zero {
+  color: red;
+}
+
+@media (max-width: 768px) {
+  .excel-table, .excel-table thead, .excel-table tbody, .excel-table th, .excel-table td, .excel-table tr {
+    display: block;
+  }
+
+  .excel-table th, .excel-table td {
+    position: relative;
+    padding-left: 50%;
+  }
+
+  .excel-table th::before, .excel-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 50%;
+    padding-left: 10px;
+    white-space: nowrap;
+    font-weight: bold;
+  }
+}

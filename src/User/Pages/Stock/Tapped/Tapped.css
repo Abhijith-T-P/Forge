@@ -1,0 +1,51 @@
+.tapped-list {
+    padding: 20px;
+  }
+  
+  .search-bar {
+    margin-bottom: 20px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .item-table-container {
+    margin-bottom: 20px;
+  }
+  
+  .excel-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .excel-table th, .excel-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .item-header {
+    background-color: #f4f4f4;
+  }
+  
+  .code-header {
+    background-color: #e0e0e0;
+  }
+  
+  .label {
+    font-weight: bold;
+  }
+  
+  .color-cell {
+    text-align: center;
+  }
+  
+  .taped {
+    text-align: center;
+  }
+  
+  .taped-zero {
+    color: #ccc;
+  }
+  

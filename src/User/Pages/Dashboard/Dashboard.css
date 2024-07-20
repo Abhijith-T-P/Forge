@@ -1,19 +1,4 @@
-:root {
-  --primary: #2BED92;
-  --primary-light: #6efcb3;
-  --primary-dark: #25d47b;
-  --highlight: #f0f8ff;
-  --border-color: #ddd;
-  --text-color: #333;
-  --red: #ff0000;
-}
 
-body {
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
-  background-color: var(--background);
-  color: var(--text-color);
-}
 
 .dashboard {
   max-width: 1200px;
@@ -32,115 +17,69 @@ body {
   padding: 8px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .excel-sheet {
-  background-color: white;
-  border: 1px solid var(--border-color);
-  border-radius: 0 0 5px 5px;
-  margin-bottom: 20px;
-  overflow-x: auto;
+  margin-top: 20px;
 }
 
 .excel-table {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.excel-table th,
-.excel-table td {
-  border: 1px solid var(--border-color);
-  padding: 8px;
+.excel-table th, .excel-table td {
+  padding: 10px;
   text-align: center;
+  border: 1px solid var(--border-color);
 }
 
-.excel-table th {
-  background-color: var(--primary-light);
-  font-weight: bold;
+.item-header {
+  background-color: var(--primary);
+  color: #fff;
 }
 
-.label {
+.code-header {
   background-color: var(--primary-light);
-  font-weight: bold;
 }
 
 .color-cell {
-  font-weight: bold;
-}
-
-.quantity,
-.finished,
-.cutting,
-.taping,
-.total {
   background-color: var(--highlight);
 }
 
-.quantity.out-of-stock,
-.cutting.out-of-stock,
-.taping.out-of-stock,
-.total.out-of-stock {
-  color: var(--red);
+.quantity.stock-zero {
+  background-color: var(--red);
+  color: #fff;
+}
+
+.quantity.stock-non-zero {
+  background-color: #e0ffe0;
+}
+
+.finished, .cutting, .taping, .total {
+  background-color: var(--highlight);
 }
 
 .sheet-title {
-  background-color: var(--primary);
-  color: white;
-  padding: 10px;
-  margin: 0;
-  border-radius: 5px 5px 0 0;
+  font-size: 24px;
+  margin-bottom: 10px;
 }
 
-.items-list .excel-table tr:hover {
-  background-color: var(--highlight);
-  cursor: pointer;
-}
-
-.item-code {
-  font-weight: bold;
-}
-
-.item-status {
-  font-weight: bold;
-}
-
-.item-status.out-of-stock {
-  color: var(--red);
+.item-table-container {
+  margin-bottom: 20px;
 }
 
 .no-item-found {
-  padding: 20px;
-  text-align: center;
   color: var(--red);
+  font-size: 18px;
+  text-align: center;
 }
-
-@media (max-width: 768px) {
-  .dashboard {
-    padding: 10px;
-  }
-
-  .excel-table {
-    font-size: 14px;
-  }
-
-  .excel-table th,
-  .excel-table td {
-    padding: 6px;
-  }
-}
-
-@media (max-width: 480px) {
-  .excel-table {
-    font-size: 12px;
-  }
-
-  .excel-table th,
-  .excel-table td {
-    padding: 4px;
-  }
-
-  .sheet-title {
-    font-size: 16px;
-  }
+/* Add this to your Dashboard.css */
+.total-zero {
+  background-color: red;
+  color: white;
 }
