@@ -1,3 +1,4 @@
+// Finished.js
 import React, { useMemo, useState } from 'react';
 import './Finished.css';
 
@@ -189,28 +190,19 @@ const Finished = () => {
     }),
     []
   );
-  
-
-  // Filter and group items by item code
-  const groupedItems = useMemo(() => {
-    const grouped = {};
-
-    Object.entries(itemsData).forEach(([itemCode, data]) => {
-      grouped[itemCode] = {
-        colors: data.colors,
-        finished: data.finished,
-        finishedTotal: data.finished.reduce((acc, qty) => acc + qty, 0),
-      };
-    });
-
-    return grouped;
-  }, [itemsData]);
 
   const filteredItems = useMemo(() => {
-    return Object.entries(groupedItems).filter(([itemCode]) =>
+    return Object.entries(itemsData).filter(([itemCode]) =>
       itemCode.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm, groupedItems]);
+  }, [searchTerm, itemsData]);
+
+  const getCellClass = (value) => {
+    if (value === 0) return "quantity-zero";
+    if (value > 0 && value < 5) return "quantity-low";
+    if (value >= 5 && value < 10) return "quantity-medium";
+    return "quantity-high";
+  };
 
   return (
     <div className="finished-list">
@@ -221,41 +213,38 @@ const Finished = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="search-bar"
       />
-      {filteredItems.map(([itemCode, data]) => (
-        <div className="item-table-container" key={itemCode}>
-          <table className="excel-table">
-            <thead>
-              <tr>
-                <th className="item-header" colSpan={2}>
-                  ITEM {itemCode}
-                </th>
-              </tr>
-              <tr>
-                <th className="label">COLOR</th>
-                <th className="label">FINISHED</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.colors.map((color, index) => (
-                <tr key={index}>
-                  <td className={`color-cell ${color.toLowerCase()}`}>
-                    {color}
-                  </td>
-                  <td className={`quantity ${data.finished[index] === 0 ? 'finished-zero' : ''}`}>
+      <table className="excel-table">
+        <thead>
+          <tr>
+            <th>ITEM</th>
+            <th>COLOR</th>
+            <th>FINISHED</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredItems.length > 0 ? (
+            filteredItems.flatMap(([itemCode, data]) =>
+              data.colors.map((color, index) => (
+                <tr key={`${itemCode}-${index}`}>
+                  {index === 0 && (
+                    <td rowSpan={data.colors.length} className="item-code">
+                      {itemCode}
+                    </td>
+                  )}
+                  <td className={`color-cell ${color.toLowerCase()}`}>{color}</td>
+                  <td className={`quantity ${getCellClass(data.finished[index])}`}>
                     {data.finished[index]}
                   </td>
                 </tr>
-              ))}
-              <tr>
-                <td className="label">TOTAL</td>
-                <td className={`finished ${data.finishedTotal === 0 ? 'finished-zero' : ''}`}>
-                  {data.finishedTotal}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      ))}
+              ))
+            )
+          ) : (
+            <tr>
+              <td colSpan="3" className="no-item-found">No items found</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };
