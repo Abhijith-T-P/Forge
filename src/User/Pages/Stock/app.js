@@ -4,6 +4,7 @@ import StockNav from './StockNav/StockNav'
 import Finished from './Finished/Finished'
 import Tapped from './Tapped/Tapped'
 import Cutting from './Cutting/Cutting'
+import Total from './Total/Total'
 
 const app = () => {
   return (
@@ -13,6 +14,7 @@ const app = () => {
             <Route path='/Finished' element={<Finished/>}/>
             <Route path='/Tapped' element={<Tapped/>}/>
             <Route path='/Cutting' element={<Cutting/>}/>
+            <Route path='/Total' element={<Total/>}/>
         </Routes>
     </div>
   )

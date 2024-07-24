@@ -13,6 +13,8 @@ const StockNav = () => {
       </NavLink>
       <NavLink to="../stock/Finished" className="nav-button" activeClassName="active">
         Finished
+      </NavLink><NavLink to="../stock/Total" className="nav-button" activeClassName="active">
+        Total
       </NavLink>
     </nav>
   );
