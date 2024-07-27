@@ -1,5 +1,6 @@
+// Header.js
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import './Header.css';
 
 const Header = ({ onToggleSidebar }) => {
@@ -12,15 +13,14 @@ const Header = ({ onToggleSidebar }) => {
           </svg>
         </button>
         <div className="logo">
-        Supply<span>Craft</span>
+          Supply<span>Craft</span>
         </div>
       </div>
       <nav className="navigation">
         <ul>
-          <li><Link to="./">Dashboard</Link></li>
-          <li><Link to="./Add/AddItem">Work</Link></li>
-          <li><Link to="./Stock/Finished">StockList</Link></li>
-         
+          <li><NavLink exact to="/" activeClassName="active">Dashboard</NavLink></li>
+          <li><NavLink to="/Add/AddItem" activeClassName="active">Work</NavLink></li>
+          <li><NavLink to="/Stock/Finished" activeClassName="active">StockList</NavLink></li>
         </ul>
       </nav>
       <div className="user-profile">

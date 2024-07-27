@@ -25,9 +25,9 @@
     color: #fff; /* White text color on hover */
   }
   
-  .active {
-    background-color: var(--accent); /* Accent color for active button */
-    color: #fff; /* White text color for active button */
+  .nav-button.active {
+    background-color: #fff; /* Accent color for active button */
+/* White text color for active button */
     border: 1px solid var(--accent); /* Accent color for active button border */
   }
   

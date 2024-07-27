@@ -56,8 +56,8 @@ header {
   font-weight: 500;
 }
 
-.navigation ul li a:hover {
-  color: var(--primary-light);
+.navigation ul li a:hover, .navigation ul li a.active {
+  color: var(--primary-light)!important;
 }
 
 /* User profile styles */
