@@ -6,9 +6,8 @@ const HoldPage = () => {
   const [itemCode, setItemCode] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [holdQuantities, setHoldQuantities] = useState({});
-  const [filter, setFilter] = useState('all'); 
 
-  const itemCodes = Array.from({ length: 3 }, (_, i) => `40${i + 4}`);
+  const itemCodes = useMemo(() => ['404', '405', '406'], []);
 
   const dummyData = useMemo(() => ({
     '404': {
@@ -86,7 +85,6 @@ const HoldPage = () => {
       holdQuantities: holdQuantities,
     });
 
-    // Update the dummy data to reflect the new hold quantities
     dummyData[itemCode].hold = updatedHold;
 
     console.log('Updated Hold:', updatedHold);
@@ -140,12 +138,6 @@ const HoldPage = () => {
       </div>
     );
   };
-
-  const filteredItems = Object.keys(dummyData).filter(code => {
-    const item = dummyData[code];
-    const totalHold = item.hold.reduce((sum, qty) => sum + qty, 0);
-    return filter === 'all' || totalHold > 0;
-  });
 
   return (
     <div className="hold-page-container">
@@ -203,7 +195,6 @@ const HoldPage = () => {
           {renderHoldSummary()}
         </>
       )}
-    
     </div>
   );
 };
