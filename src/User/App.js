@@ -7,6 +7,8 @@ import "./Style.css";
 import StockDetail from "./Pages/ItemDetail/StockDetail";
 import Add from "./Pages/Add/app";
 import Stock from "./Pages/Stock/app";
+import AddColor from "./Pages/AddColor/AddColor";
+import AddCode from "./Pages/AddCode/AddCode";
 
 const App = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -27,6 +29,9 @@ const App = () => {
             <Route path="/Add/*" element={<Add />} />
             <Route path="/Stock/*" element={<Stock />} />
             <Route path="/Item/:itemCode" element={<StockDetail />} />
+            <Route path="/AddColor" element={<AddColor />} />
+            <Route path="/AddCode" element={<AddCode />} />
+            
           </Routes>
         </div>
       </div>

@@ -16,7 +16,8 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => (
         <li><Link to='./' onClick={toggleSidebar}>Dashboard</Link></li>
         <li><Link to="./Add/AddItem" onClick={toggleSidebar}>Work</Link></li>
         <li><Link to="./Stock/Finished" onClick={toggleSidebar}>StockList</Link></li>
-       
+        <li><Link to="./AddColor">AddColor</Link></li>
+        <li><Link to="./AddCode">AddCode</Link></li> 
       </ul>
     </nav>
   </div>
