@@ -22,7 +22,8 @@
             <li><Link to="./Stock/Finished">StockList</Link></li>
             <li><Link to="./AddColor">AddColor</Link></li>
             <li><Link to="./AddCode">AddCode</Link></li>
-          
+            <li><Link to="./HoldPage">HoldPage</Link></li>
+
           </ul>
         </nav>
         <div className="user-profile">

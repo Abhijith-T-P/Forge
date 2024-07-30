@@ -1,0 +1,113 @@
+
+.cutting-list {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.search-bar {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.excel-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border-color);
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.excel-table th, .excel-table td {
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  text-align: left;
+}
+
+.excel-table th {
+  background-color: var(--primary);
+  color: white;
+  font-weight: bold;
+}
+
+.item-code {
+  background-color: var(--primary-light);
+  font-weight: bold;
+}
+
+.color-cell {
+  text-transform: capitalize;
+}
+
+.quantity {
+  text-align: right;
+}
+
+.quantity-zero {
+  background-color: #FFCDD2;
+  color: #B71C1C;
+}
+
+.quantity-low {
+  background-color: #FFF9C4;
+  color: #F57F17;
+}
+
+.quantity-medium {
+  background-color: #C8E6C9;
+  color: #388E3C;
+}
+
+.quantity-high {
+  background-color: #BBDEFB;
+  color: #1976D2;
+}
+
+.excel-table tr:hover {
+  background-color: var(--highlight);
+}
+
+.no-item-found {
+  color: var(--red);
+  font-style: italic;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .excel-table, .excel-table thead, .excel-table tbody, .excel-table th, .excel-table td, .excel-table tr {
+    display: block;
+  }
+
+  .excel-table th {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  .excel-table tr {
+    border: 1px solid var(--border-color);
+    margin-bottom: 10px;
+  }
+
+  .excel-table td {
+    border: none;
+    position: relative;
+    padding-left: 50%;
+  }
+
+  .excel-table td:before {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 45%;
+    padding-right: 10px;
+    white-space: nowrap;
+    content: attr(data-label);
+    font-weight: bold;
+  }
+}

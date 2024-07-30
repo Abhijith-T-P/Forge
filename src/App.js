@@ -1,6 +1,7 @@
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
-import User from './User/App'
+import Admin from './Admin/App'
+import Worker from './Worker/App'
 // import Guest from './Guest/App'
 import './App.css'
 
@@ -9,8 +10,9 @@ const App = () => {
     <div>
       <Routes>
         {/* <Route path="/*" element={<Guest/>} /> */}
-        <Route path="/User/*" element={<User/>} />
-        <Route path="/*" element={<User/>} />
+        <Route path="/*" element={<Admin/>} />
+        <Route path="/Admin/*" element={<Admin/>} />
+        <Route path="/Worker/*" element={<Worker/>} />
       </Routes>
     </div>
   )

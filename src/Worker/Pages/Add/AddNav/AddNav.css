@@ -1,0 +1,45 @@
+.add-nav {
+    display: flex;
+    justify-content: space-around;
+    background-color: var(--background);
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  }
+  
+  .nav-button {
+    text-decoration: none;
+    color: var(--text-color);
+    padding: 10px 20px;
+    border: 1px solid var(--accent); /* Accent color for border */
+    border-radius: 5px;
+    background-color: #fff;
+    transition: background-color 0.3s, color 0.3s;
+    margin: 10px; /* Increased margin between buttons */
+    flex: 1 0 auto; /* Allow buttons to grow and shrink */
+    text-align: center; /* Center text in buttons */
+  }
+  
+  .nav-button:hover {
+    background-color: var(--accent); /* Accent color on hover */
+    color: #fff; /* White text color on hover */
+  }
+  
+  .nav-button.active {
+    background-color: #fff; /* Accent color for active button */
+/* White text color for active button */
+    border: 1px solid var(--accent); /* Accent color for active button border */
+  }
+  
+  @media (max-width: 768px) {
+    .add-nav {
+      flex-direction: column; /* Stack buttons vertically on smaller screens */
+      align-items: center;
+    }
+  
+    .nav-button {
+      flex: 1 0 80%; /* Make buttons wider on smaller screens */
+      margin: 15px 0; /* Increased vertical margin */
+    }
+  }
+  
