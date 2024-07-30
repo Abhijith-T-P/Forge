@@ -17,12 +17,9 @@
         </div>
         <nav className="navigation">
           <ul>
-            <li><Link to="./">Dashboard</Link></li>
             <li><Link to="./Add/AddItem">Work</Link></li>
             <li><Link to="./Stock/Finished">StockList</Link></li>
-            <li><Link to="./AddColor">AddColor</Link></li>
-            <li><Link to="./AddCode">AddCode</Link></li>
-            <li><Link to="./HoldPage">HoldPage</Link></li>
+       
 
           </ul>
         </nav>
