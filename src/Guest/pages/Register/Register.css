@@ -16,7 +16,7 @@
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 500px; /* Increase max-width for larger screens */
+    max-width: 700px; /* Increase max-width for larger screens */
     box-sizing: border-box;
   }
   
