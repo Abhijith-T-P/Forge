@@ -1,5 +1,8 @@
+
 import React, { useMemo, useState } from 'react';
 import './Total.css';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const Total = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -188,7 +191,6 @@ const Total = () => {
     }),
     []
   );
-  
 
   const filteredItems = useMemo(() => {
     return Object.entries(itemsData).filter(([itemCode]) =>
@@ -207,6 +209,29 @@ const Total = () => {
     return (data.finished[index] || 0) + (data.cuttingQuantities[index] || 0) + (data.tapingQuantities[index] || 0);
   };
 
+  const handleExportPDF = () => {
+    const input = document.getElementById('table-to-export');
+    html2canvas(input).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 295; // A4 height in mm
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      let heightLeft = imgHeight;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      while (heightLeft >= 0) {
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, heightLeft - imgHeight, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      pdf.save('Total table.pdf');
+    });
+  };
+
   return (
     <div className="total-list">
       <input
@@ -216,7 +241,10 @@ const Total = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="search-bar"
       />
-      <table className="excel-table">
+      <button onClick={handleExportPDF} className="export-button">
+        Export as PDF
+      </button>
+      <table id="table-to-export" className="excel-table">
         <thead>
           <tr>
             <th>ITEM</th>
