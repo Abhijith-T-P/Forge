@@ -6,15 +6,17 @@ const Login = () => {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate(); // Replace useHistory with useNavigate
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Check the credentials and navigate accordingly
     if (name === 'admin' && password === '123') {
-      navigate('/Admin'); // Use navigate instead of history.push
+      localStorage.setItem('user', JSON.stringify({ name, role: 'admin' }));
+      navigate('/Admin');
     } else if (name === 'sales' && password === '123') {
-      navigate('/Sales'); // Use navigate instead of history.push
+      localStorage.setItem('user', JSON.stringify({ name, role: 'sales' }));
+      navigate('/Sales');
     } else {
       console.log('Invalid credentials');
       // Optionally, add logic for handling invalid credentials, e.g., show an error message
@@ -67,7 +69,7 @@ const Login = () => {
           <p>Don't have an account? <Link to="/register">Register</Link></p>
         </div>
       </form>
-    </div>  
+    </div>
   );
 };
 
