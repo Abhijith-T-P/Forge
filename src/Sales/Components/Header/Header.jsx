@@ -17,15 +17,13 @@
         </div>
         <nav className="navigation">
           <ul>
-            <li><Link to="./Add/AddItem">Work</Link></li>
+            <li><Link to="./">Dashboard</Link></li>       
             <li><Link to="./Stock/Finished">StockList</Link></li>
-       
-
           </ul>
         </nav>
         <div className="user-profile">
           <img src="avatar.jpg" alt="User Avatar" />
-          <span>User Name</span>
+          <span>Sales</span>
         </div>
       </header>
     );

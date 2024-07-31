@@ -1,7 +1,7 @@
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Admin from './Admin/App'
-import Worker from './Worker/App'
+import Sales from './Sales/App'
 // import Guest from './Guest/App'
 import './App.css'
 
@@ -12,7 +12,7 @@ const App = () => {
         {/* <Route path="/*" element={<Guest/>} /> */}
         <Route path="/*" element={<Admin/>} />
         <Route path="/Admin/*" element={<Admin/>} />
-        <Route path="/Worker/*" element={<Worker/>} />
+        <Route path="/Sales/*" element={<Sales/>} />
       </Routes>
     </div>
   )

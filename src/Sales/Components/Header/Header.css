@@ -65,7 +65,9 @@ header {
   display: flex;
   align-items: center;
 }
-
+.user-profile span{
+font-weight: bold;
+}
 .user-profile img {
   width: 40px;
   height: 40px;
