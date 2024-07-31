@@ -9,7 +9,6 @@ import Add from "./Pages/Add/app";
 import Stock from "./Pages/Stock/app";
 import AddColor from "./Pages/AddColor/AddColor";
 import AddCode from "./Pages/AddCode/AddCode";
-import HoldPage from "./Pages/HoldPage/HoldPage";
 
 const App = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -32,7 +31,6 @@ const App = () => {
             <Route path="/Item/:itemCode" element={<StockDetail />} />
             <Route path="/AddColor" element={<AddColor />} />
             <Route path="/AddCode" element={<AddCode />} />
-            <Route path="/HoldPage" element={<HoldPage />} />
             
           </Routes>
         </div>
