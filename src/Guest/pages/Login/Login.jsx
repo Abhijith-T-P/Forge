@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Login.css';
 
@@ -7,6 +7,18 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const { role } = JSON.parse(storedUser);
+      if (role === 'admin') {
+        navigate('/Admin');
+      } else if (role === 'sales') {
+        navigate('/Sales');
+      }
+    }
+  }, [navigate]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
