@@ -39,8 +39,8 @@ p {
   margin-bottom: 1.5rem;
 }
 
-input[type="text"],
-input[type="password"] {
+.input-group input[type="text"],
+.input-group input[type="password"] {
   width: 100%;
   padding: 1rem;
   border: 1px solid var(--border-color);

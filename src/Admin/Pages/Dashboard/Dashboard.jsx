@@ -215,6 +215,7 @@ const Dashboard = () => {
       tapingQuantities: [1, 1, 1],
       hold: [1, 1, 1],
     },
+
   });
 
   const sortedItemsData = useMemo(() => {
@@ -237,12 +238,14 @@ const Dashboard = () => {
   }, [searchTerm, itemsData]);
 
   const handleHoldChange = (itemCode, index) => (e) => {
-    const newHoldValue = parseInt(e.target.value, 10) || 0;
-    setItemsData((prevData) => {
-      const updatedData = { ...prevData };
-      updatedData[itemCode].hold[index] = newHoldValue;
-      return updatedData;
-    });
+    const newHoldValue = e.target.value;
+    if (/^\d*$/.test(newHoldValue)) { // Check if the input is numeric
+      setItemsData((prevData) => {
+        const updatedData = { ...prevData };
+        updatedData[itemCode].hold[index] = newHoldValue;
+        return updatedData;
+      });
+    }
   };
 
   const getCellClass = (value) => {
@@ -284,10 +287,12 @@ const Dashboard = () => {
             </td>
             <td className="quantity">
               <input
-                type="number"
+                type="text"
                 value={item.hold[index]}
                 onChange={handleHoldChange(itemCode, index)}
                 className="hold-input"
+                // Make sure the value is numeric
+                pattern="\d*"
               />
             </td>
           </tr>
