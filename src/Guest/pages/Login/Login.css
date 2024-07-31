@@ -6,6 +6,8 @@
   align-items: center;
   height: 100vh;
   background-color: var(--background);
+  padding: 1rem; /* Add padding to prevent content from touching screen edges */
+  box-sizing: border-box; /* Ensure padding doesn't cause overflow */
 }
 
 .login-form {
@@ -14,32 +16,34 @@
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
+  max-width: 500px; /* Increase max-width for larger screens */
   box-sizing: border-box;
 }
 
 h1 {
   color: var(--primary-dark);
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem; /* Increase bottom margin for better spacing */
+  font-size: 2rem; /* Increase font size for better readability */
 }
 
 p {
   color: var(--text-color);
   margin-bottom: 1.5rem;
+  font-size: 1.25rem; /* Increase font size */
 }
 
 .input-group {
   position: relative;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem; /* Increase margin for more space between inputs */
 }
 
-.input-group input[type="text"],
-.input-group input[type="password"] {
+input[type="text"],
+input[type="password"] {
   width: 100%;
-  padding: 0.75rem;
+  padding: 1rem; /* Increase padding for larger input fields */
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 1.25rem; /* Increase font size for better readability */
   box-sizing: border-box;
 }
 
@@ -50,18 +54,20 @@ p {
   transform: translateY(-50%);
   color: var(--accent);
   cursor: pointer;
+  font-size: 1.25rem; /* Match icon size with input text */
 }
 
 .checkbox-group {
   display: flex;
   align-items: center;
-  margin-bottom: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
 }
 
 .forgot-password {
-  margin-left: auto;
   color: var(--primary-dark);
   text-decoration: none;
+  font-size: 1.25rem; /* Increase font size */
 }
 
 .forgot-password:hover {
@@ -70,12 +76,12 @@ p {
 
 .login-button {
   width: 100%;
-  padding: 0.75rem;
+  padding: 1rem; /* Increase padding for larger button */
   background-color: var(--primary);
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 1.25rem; /* Increase font size */
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -88,6 +94,7 @@ p {
 
 .arrow {
   margin-left: 0.5rem;
+  font-size: 1.25rem; /* Match arrow size with button text */
 }
 
 .register-link {
@@ -97,11 +104,13 @@ p {
 
 .register-link p {
   color: var(--text-color);
+  font-size: 1.25rem; /* Increase font size */
 }
 
 .register-link a {
   color: var(--primary-dark);
   text-decoration: none;
+  font-size: 1.25rem; /* Increase font size */
 }
 
 .register-link a:hover {
