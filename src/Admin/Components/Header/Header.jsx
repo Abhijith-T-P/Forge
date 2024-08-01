@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Header.css';
 
 const Header = ({ onToggleSidebar }) => {
+  const [userName, setUserName] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -10,6 +11,8 @@ const Header = ({ onToggleSidebar }) => {
 
     if (!user || user.role !== 'admin') {
       navigate('/');
+    } else {
+      setUserName(user.name); // Set the username from local storage
     }
   }, [navigate]);
 
@@ -35,8 +38,9 @@ const Header = ({ onToggleSidebar }) => {
         </ul>
       </nav>
       <div className="user-profile">
-        <img src="avatar.jpg" alt="User Avatar" />
-        <span>User Name</span>
+      <svg xmlns="http://www.w3.org/2000/svg" height="34px" viewBox="0 -960 960 960" width="34px" fill="var(--text-color)" preserveAspectRatio="xMinYMin meet" style={{ display: 'block' }}>
+  <path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/>
+</svg>        <span>{userName}</span> {/* Display the username here */}
       </div>
     </header>
   );

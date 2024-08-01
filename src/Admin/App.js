@@ -4,7 +4,6 @@ import Dashboard from "./Pages/Dashboard/Dashboard";
 import Sidebar from "./Components/Sidebar/Sidebar";
 import Header from "./Components/Header/Header";
 import "./Style.css";
-import StockDetail from "./Pages/ItemDetail/StockDetail";
 import Add from "./Pages/Add/app";
 import Stock from "./Pages/Stock/app";
 import AddColor from "./Pages/AddColor/AddColor";
@@ -30,7 +29,6 @@ const App = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/Add/*" element={<Add />} />
             <Route path="/Stock/*" element={<Stock />} />
-            <Route path="/Item/:itemCode" element={<StockDetail />} />
             <Route path="/AddColor" element={<AddColor />} />
             <Route path="/AddCode" element={<AddCode />} />
             <Route path="/AddAdmin" element={<AddAdmin />} />

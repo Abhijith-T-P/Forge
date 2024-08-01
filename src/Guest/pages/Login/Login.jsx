@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getFirestore, collection, getDocs} from 'firebase/firestore';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import './Login.css';
 
 const Login = () => {
@@ -26,32 +26,38 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(''); // Clear any previous error messages
-  
+
     try {
       // Fetch all documents from Admins collection
       const adminSnapshot = await getDocs(collection(db, 'Admins'));
-      const admins = adminSnapshot.docs.map(doc => doc.data());
-  
+      const admins = adminSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
       // Fetch all documents from SalesMen collection
       const salesSnapshot = await getDocs(collection(db, 'SalesMen'));
-      const salesMen = salesSnapshot.docs.map(doc => doc.data());
-  
+      const salesMen = salesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
       // Check Admins collection
       const adminUser = admins.find(admin => admin.username === name);
       if (adminUser && adminUser.password === password) {
-        localStorage.setItem('user', JSON.stringify({ name, role: 'admin' }));
+        localStorage.setItem('user', JSON.stringify({ name, role: 'admin', id: adminUser.id }));
         navigate('/Admin');
         return;
       }
-  
+
       // Check SalesMen collection
       const salesUser = salesMen.find(sales => sales.username === name);
       if (salesUser && salesUser.password === password) {
-        localStorage.setItem('user', JSON.stringify({ name, role: 'sales' }));
+        localStorage.setItem('user', JSON.stringify({ name, role: 'sales', id: salesUser.id }));
         navigate('/Sales');
         return;
       }
-  
+
       // If no user is found or password doesn't match
       setError('Invalid credentials');
     } catch (error) {
@@ -59,6 +65,7 @@ const Login = () => {
       setError('An error occurred. Please try again.');
     }
   };
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
