@@ -64,6 +64,8 @@ header {
 .user-profile {
   display: flex;
   align-items: center;
+  padding-left: .5rem;
+
 }
 
 .user-profile img {

@@ -67,6 +67,7 @@ header {
 }
 .user-profile span{
 font-weight: bold;
+padding-left: .5rem;
 }
 .user-profile img {
   width: 40px;
