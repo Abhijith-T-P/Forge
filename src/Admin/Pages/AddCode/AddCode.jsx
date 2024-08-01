@@ -1,24 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from '../../../config/firebase'; // Import Firebase configuration
 import './AddCode.css';
+import { addDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 
 const AddCode = () => {
   const [codeInput, setCodeInput] = useState('');
-  const [itemCodes, setItemCodes] = useState([
-    { code: '404' },
-    { code: '404a' },
-    { code: '405' },
-    { code: '406b' },
-    { code: '407' },
-    { code: '407c' },
-    { code: '409' }
-  ]);
+  const [itemCodes, setItemCodes] = useState([]);
 
-  const handleAddCode = () => {
-    if (codeInput && !itemCodes.find((item) => item.code === codeInput)) {
-      setItemCodes([...itemCodes, { code: codeInput }]);
-      console.log('Code entered successfully');
-      alert('Code added successfully!');
-      setCodeInput('');
+  useEffect(() => {
+    // Fetch item codes from Firebase on component mount
+    const fetchCodes = async () => {
+      try {
+        const codeCollection = await getDocs(collection(db, 'itemCodes'));
+        const codesData = codeCollection.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setItemCodes(codesData);
+      } catch (error) {
+        console.error("Error fetching codes: ", error);
+      }
+    };
+
+    fetchCodes();
+  }, []);
+
+  const handleAddCode = async () => {
+    if (codeInput.trim() && !itemCodes.find((item) => item.code === codeInput)) {
+      try {
+        // Add code to Firebase
+        await addDoc(collection(db, 'itemCodes'), { code: codeInput.trim() });
+        setItemCodes([...itemCodes, { code: codeInput.trim() }]);
+        alert('Code added successfully!');
+        setCodeInput('');
+      } catch (error) {
+        console.error("Error adding code: ", error);
+        alert('Failed to add code.');
+      }
     } else if (itemCodes.find((item) => item.code === codeInput)) {
       alert('Code already exists.');
     } else {
@@ -26,8 +41,20 @@ const AddCode = () => {
     }
   };
 
-  const handleRemoveCode = (codeToRemove) => {
-    setItemCodes(itemCodes.filter((item) => item.code !== codeToRemove));
+  const handleRemoveCode = async (codeToRemove) => {
+    try {
+      // Find and delete the code document in Firebase
+      const q = query(collection(db, 'itemCodes'), where('code', '==', codeToRemove));
+      const snapshot = await getDocs(q);
+      snapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+      setItemCodes(itemCodes.filter((item) => item.code !== codeToRemove));
+    } catch (error) {
+      console.error("Error removing code: ", error);
+      alert('Failed to remove code.');
+    }
   };
 
   // Function to sort item codes

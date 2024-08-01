@@ -46,7 +46,9 @@
   border: 1px solid var(--primary-light);
   border-radius: 4px;
 }
-
+.color-input{
+  margin-top: 10px;
+}
 .add-item-row input:focus,
 .add-item-row select:focus {
   background-color: var(--primary-light);

@@ -1,21 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from '../../../config/firebase'; // Import the Firebase configuration
 import './AddColor.css';
+import { addDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 
 const AddColor = () => {
   const [colorName, setColorName] = useState('');
-  const [colors, setColors] = useState(['RED', 'BLUE', 'GREEN', 'YELLOW', 'PURPLE', 'ORANGE']);
+  const [colors, setColors] = useState([]);
 
-  const handleAddColor = () => {
+  useEffect(() => {
+    // Fetch colors from Firebase on component mount
+    const fetchColors = async () => {
+      try {
+        const colorCollection = await getDocs(collection(db, 'colors'));
+        const colorsData = colorCollection.docs.map(doc => doc.data().color);
+        setColors(colorsData);
+      } catch (error) {
+        console.error("Error fetching colors: ", error);
+      }
+    };
+
+    fetchColors();
+  }, []);
+
+  const handleAddColor = async () => {
     if (colorName.trim() && !colors.includes(colorName.trim().toUpperCase())) {
-      setColors([...colors, colorName.trim().toUpperCase()]);
-      setColorName('');
-      alert('Color added successfully!');
-      console.log('Color entered successfully');
+      const newColor = colorName.trim().toUpperCase();
+
+      try {
+        // Add color to Firebase
+        await addDoc(collection(db, 'colors'), { color: newColor });
+        setColors([...colors, newColor]);
+        setColorName('');
+        alert('Color added successfully!');
+      } catch (error) {
+        console.error("Error adding color: ", error);
+        alert('Failed to add color.');
+      }
     }
   };
 
-  const handleRemoveColor = (colorToRemove) => {
-    setColors(colors.filter(color => color !== colorToRemove));
+  const handleRemoveColor = async (colorToRemove) => {
+    try {
+      // Find and delete the color document in Firebase
+      const q = query(collection(db, 'colors'), where('color', '==', colorToRemove));
+      const snapshot = await getDocs(q);
+      snapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+      setColors(colors.filter(color => color !== colorToRemove));
+    } catch (error) {
+      console.error("Error removing color: ", error);
+      alert('Failed to remove color.');
+    }
   };
 
   return (
