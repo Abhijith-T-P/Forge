@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getFirestore, collection, getDocs} from 'firebase/firestore';
 import './Login.css';
 
 const Login = () => {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const db = getFirestore(); // Initialize Firestore
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -20,21 +23,42 @@ const Login = () => {
     }
   }, [navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Check the credentials and navigate accordingly
-    if (name === 'admin' && password === '123') {
-      localStorage.setItem('user', JSON.stringify({ name, role: 'admin' }));
-      navigate('/Admin');
-    } else if (name === 'sales' && password === '123') {
-      localStorage.setItem('user', JSON.stringify({ name, role: 'sales' }));
-      navigate('/Sales');
-    } else {
-      console.log('Invalid credentials');
-      // Optionally, add logic for handling invalid credentials, e.g., show an error message
+    setError(''); // Clear any previous error messages
+  
+    try {
+      // Fetch all documents from Admins collection
+      const adminSnapshot = await getDocs(collection(db, 'Admins'));
+      const admins = adminSnapshot.docs.map(doc => doc.data());
+  
+      // Fetch all documents from SalesMen collection
+      const salesSnapshot = await getDocs(collection(db, 'SalesMen'));
+      const salesMen = salesSnapshot.docs.map(doc => doc.data());
+  
+      // Check Admins collection
+      const adminUser = admins.find(admin => admin.username === name);
+      if (adminUser && adminUser.password === password) {
+        localStorage.setItem('user', JSON.stringify({ name, role: 'admin' }));
+        navigate('/Admin');
+        return;
+      }
+  
+      // Check SalesMen collection
+      const salesUser = salesMen.find(sales => sales.username === name);
+      if (salesUser && salesUser.password === password) {
+        localStorage.setItem('user', JSON.stringify({ name, role: 'sales' }));
+        navigate('/Sales');
+        return;
+      }
+  
+      // If no user is found or password doesn't match
+      setError('Invalid credentials');
+    } catch (error) {
+      console.error('Error checking credentials:', error);
+      setError('An error occurred. Please try again.');
     }
   };
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -45,10 +69,12 @@ const Login = () => {
         <h1>Welcome to SupplyCraft!</h1>
         <p>Sign in to your account</p>
         
+        {error && <div className="error-message">{error}</div>}
+        
         <div className="input-group">
           <input
             type="text"
-            placeholder="Name"
+            placeholder="Username"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -70,7 +96,7 @@ const Login = () => {
         </div>
         
         <div className="checkbox-group">
-          <Link to="/forgot-password" className="forgot-password">Forgot password?</Link>
+          <Link to="/ForgotPassword" className="forgot-password">Forgot password?</Link>
         </div>
         
         <button type="submit" className="login-button">
@@ -78,7 +104,6 @@ const Login = () => {
         </button>
         
         <div className="register-link">
-          <p>Don't have an account? <Link to="/register">Register</Link></p>
         </div>
       </form>
     </div>

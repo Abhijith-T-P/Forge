@@ -1,0 +1,46 @@
+.add-salesman-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background);
+    border-radius: 8px;
+  }
+  
+  .salesman-form input, .salesman-list input {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+  }
+  
+  .salesman-form button, .salesman-item button {
+    padding: 10px 15px;
+    background-color: var(--primary);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .salesman-form button:hover, .salesman-item button:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  .salesman-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .salesman-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+  }
+  
+  .salesman-item input {
+    margin-right: 10px;
+  }
+  

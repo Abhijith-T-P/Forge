@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getDocs, collection, doc, updateDoc } from 'firebase/firestore';
+import { getDocs, collection, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsData, setItemsData] = useState({});
+  const [holdItems, setHoldItems] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const collections = ['Cutting', 'Finished', 'Tapping', 'Hold'];
+        const collections = ['Cutting', 'Finished', 'Tapping', 'HoldItem'];
         const data = {};
+        const holdData = {};
 
         // Fetch available colors
         const colorsSnapshot = await getDocs(collection(db, 'colors'));
@@ -36,30 +38,39 @@ const Dashboard = () => {
                   finished: Array(colors.length).fill(0),
                   cuttingQuantities: Array(colors.length).fill(0),
                   tapingQuantities: Array(colors.length).fill(0),
-                  hold: Array(colors.length).fill(0),
                 };
               }
 
               let quantityField;
               if (collectionName === 'Cutting') {
-                quantityField = 'cuttingQuantities';
+                quantityField = 'stockByColor';
               } else if (collectionName === 'Finished') {
-                quantityField = 'finished';
+                quantityField = 'finishedQuantities';
               } else if (collectionName === 'Tapping') {
-                quantityField = 'tapingQuantities';
-              } else if (collectionName === 'Hold') {
-                quantityField = 'hold';
+                quantityField = 'tapedQuantities';
+              } else if (collectionName === 'HoldItem') {
+                quantityField = 'quantity';
+                holdData[docData.itemCode] = {};
+                colors.forEach(color => {
+                  holdData[docData.itemCode][color] = docData.quantity?.[color] || 0;
+                });
               }
 
-              if (docData[quantityField] || docData.hold) {
-                const sourceData = collectionName === 'Hold' ? docData.hold : docData[quantityField];
+              if (docData[quantityField] && collectionName !== 'HoldItem') {
+                const sourceData = docData[quantityField];
                 if (typeof sourceData === 'object') {
                   Object.entries(sourceData).forEach(([color, quantity]) => {
                     if (data[docData.itemCode].colors.includes(color)) {
                       const colorIndex = data[docData.itemCode].colors.indexOf(color);
                       const parsedQuantity = parseInt(quantity, 10);
                       if (!isNaN(parsedQuantity)) {
-                        data[docData.itemCode][quantityField][colorIndex] += parsedQuantity;
+                        if (collectionName === 'Cutting') {
+                          data[docData.itemCode].cuttingQuantities[colorIndex] = parsedQuantity;
+                        } else if (collectionName === 'Finished') {
+                          data[docData.itemCode].finished[colorIndex] = parsedQuantity;
+                        } else if (collectionName === 'Tapping') {
+                          data[docData.itemCode].tapingQuantities[colorIndex] = parsedQuantity;
+                        }
                       } else {
                         console.warn(`Invalid quantity for ${collectionName}, itemCode: ${docData.itemCode}, color: ${color}`);
                       }
@@ -74,16 +85,10 @@ const Dashboard = () => {
         }
 
         console.log("Final data structure:", data);
+        console.log("Hold data:", holdData);
 
-        // Remove duplicate item codes
-        const uniqueItems = {};
-        Object.entries(data).forEach(([itemCode, item]) => {
-          if (!uniqueItems[itemCode]) {
-            uniqueItems[itemCode] = item;
-          }
-        });
-
-        setItemsData(uniqueItems);
+        setItemsData(data);
+        setHoldItems(holdData);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -96,7 +101,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     console.log("Updated itemsData:", itemsData);
-  }, [itemsData]);
+    console.log("Updated holdItems:", holdItems);
+  }, [itemsData, holdItems]);
 
   const filteredItems = useMemo(() => {
     return Object.entries(itemsData).filter(([itemCode]) =>
@@ -104,22 +110,36 @@ const Dashboard = () => {
     );
   }, [searchTerm, itemsData]);
 
-  const handleHoldChange = (itemCode, index) => async (e) => {
+  const handleHoldChange = (itemCode, color) => async (e) => {
     const newHoldValue = e.target.value;
     if (/^\d*$/.test(newHoldValue)) {
-      setItemsData((prevData) => {
-        const updatedData = { ...prevData };
-        updatedData[itemCode].hold[index] = parseInt(newHoldValue, 10);
-        return updatedData;
-      });
+      const parsedValue = parseInt(newHoldValue, 10) || 0;
+      setHoldItems((prevHoldItems) => ({
+        ...prevHoldItems,
+        [itemCode]: {
+          ...prevHoldItems[itemCode],
+          [color]: parsedValue,
+        },
+      }));
 
-      // Update Firestore
       try {
-        const itemDoc = doc(db, 'Hold', itemCode);
-        const color = itemsData[itemCode].colors[index];
-        await updateDoc(itemDoc, {
-          [`hold.${color}`]: parseInt(newHoldValue, 10)
-        });
+        const holdItemRef = doc(db, 'HoldItem', itemCode);
+        const holdItemDoc = await getDoc(holdItemRef);
+
+        if (holdItemDoc.exists()) {
+          await updateDoc(holdItemRef, { 
+            [`quantity.${color}`]: parsedValue,
+            lastUpdated: new Date()
+          });
+        } else {
+          await setDoc(holdItemRef, { 
+            itemCode: itemCode,
+            quantity: { [color]: parsedValue },
+            lastUpdated: new Date()
+          });
+        }
+
+        console.log(`Hold value updated for item code ${itemCode}, color ${color}`);
       } catch (error) {
         console.error("Error updating Firestore:", error);
       }
@@ -127,7 +147,6 @@ const Dashboard = () => {
   };
 
   const getCellClass = (value) => {
-    console.log("getCellClass value:", value);
     if (value === 0) return 'quantity-zero';
     if (value > 0 && value < 5) return 'quantity-low';
     if (value >= 5 && value < 10) return 'quantity-medium';
@@ -135,50 +154,51 @@ const Dashboard = () => {
   };
 
   const renderTable = (item, itemCode) => {
-    console.log(`Rendering table for itemCode: ${itemCode}`, item);
     return (
-      <table className="excel-table" key={itemCode}>
-        <thead>
-          <tr>
-            <th className="item-header">ITEM</th>
-            <th className="code-header" colSpan={4}>
-              {itemCode}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td className="label">COLOUR</td>
-            <td className="label">CUTTING</td>
-            <td className="label">TAPING</td>
-            <td className="label">FINISHED</td>
-            <td className="label">HOLD</td>
-          </tr>
-          {item.colors.map((color, index) => (
-            <tr key={index}>
-              <td className="color-cell">{color}</td>
-              <td className={`quantity ${getCellClass(item.cuttingQuantities[index])}`}>
-                {item.cuttingQuantities[index]}
-              </td>
-              <td className={`quantity ${getCellClass(item.tapingQuantities[index])}`}>
-                {item.tapingQuantities[index]}
-              </td>
-              <td className={`quantity ${getCellClass(item.finished[index])}`}>
-                {item.finished[index]}
-              </td>
-              <td className="quantity">
-                <input
-                  type="text"
-                  value={item.hold[index]}
-                  onChange={handleHoldChange(itemCode, index)}
-                  className="hold-input"
-                  pattern="\d*"
-                />
-              </td>
+      <div key={itemCode} className="item-table-container">
+        <table className="excel-table">
+          <thead>
+            <tr>
+              <th className="item-header">ITEM</th>
+              <th className="code-header" colSpan={5}>
+                {itemCode}
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="label">COLOUR</td>
+              <td className="label">CUTTING</td>
+              <td className="label">TAPING</td>
+              <td className="label">FINISHED</td>
+              <td className="label">HOLD</td>
+            </tr>
+            {item.colors.map((color, index) => (
+              <tr key={index}>
+                <td className="color-cell">{color}</td>
+                <td className={`quantity ${getCellClass(item.cuttingQuantities[index])}`}>
+                  {item.cuttingQuantities[index]}
+                </td>
+                <td className={`quantity ${getCellClass(item.tapingQuantities[index])}`}>
+                  {item.tapingQuantities[index]}
+                </td>
+                <td className={`quantity ${getCellClass(item.finished[index])}`}>
+                  {item.finished[index]}
+                </td>
+                <td className="quantity">
+                  <input
+                    type="text"
+                    value={holdItems[itemCode]?.[color] || ''}
+                    onChange={handleHoldChange(itemCode, color)}
+                    className="hold-input"
+                    pattern="\d*"
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     );
   };
 
