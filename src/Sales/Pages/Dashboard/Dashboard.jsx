@@ -1,248 +1,149 @@
-import React, { useState, useMemo, useEffect } from "react";
-import "./Dashboard.css";
+import React, { useState, useEffect, useMemo } from 'react';
+import { getDocs, collection, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { db } from '../../../config/firebase';
+import './Dashboard.css';
 
 const Dashboard = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [itemDetails, setItemDetails] = useState(null);
-  const [itemsData, setItemsData] = useState({
-    401: {
-      colors: ["RED", "BLUE", "GREEN"],
-      finished: [10, 15, 5],
-      cuttingQuantities: [3, 8, 2],
-      tapingQuantities: [1, 4, 0],
-      hold: [2, 3, 1],
-    },
-    402: {
-      colors: ["YELLOW", "PURPLE", "ORANGE"],
-      finished: [8, 12, 7],
-      cuttingQuantities: [2, 5, 3],
-      tapingQuantities: [1, 3, 2],
-      hold: [1, 1, 1],
-    },
-    403: {
-      colors: ["BLACK", "WHITE", "GRAY"],
-      finished: [20, 18, 15],
-      cuttingQuantities: [5, 4, 3],
-      tapingQuantities: [2, 2, 1],
-      hold: [3, 2, 2],
-    },
-    404: {
-      colors: ["PINK", "CYAN", "MAGENTA"],
-      finished: [6, 9, 4],
-      cuttingQuantities: [1, 3, 1],
-      tapingQuantities: [1, 2, 1],
-      hold: [1, 2, 1],
-    },
-    405: {
-      colors: ["BROWN", "BEIGE", "MAROON"],
-      finished: [14, 11, 8],
-      cuttingQuantities: [4, 3, 2],
-      tapingQuantities: [2, 1, 1],
-      hold: [2, 3, 2],
-    },
-    406: {
-      colors: ["TEAL", "LIME", "INDIGO"],
-      finished: [7, 5, 3],
-      cuttingQuantities: [3, 2, 1],
-      tapingQuantities: [2, 1, 0],
-      hold: [1, 1, 1],
-    },
-    407: {
-      colors: ["GOLD", "SILVER", "BRONZE"],
-      finished: [9, 10, 8],
-      cuttingQuantities: [2, 3, 2],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 2, 1],
-    },
-    408: {
-      colors: ["NAVY", "AQUA", "LAVENDER"],
-      finished: [5, 7, 6],
-      cuttingQuantities: [1, 2, 2],
-      tapingQuantities: [0, 1, 1],
-      hold: [1, 1, 1],
-    },
-    409: {
-      colors: ["SALMON", "CORAL", "PEACH"],
-      finished: [4, 5, 6],
-      cuttingQuantities: [2, 1, 3],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    410: {
-      colors: ["MINT", "OLIVE", "TURQUOISE"],
-      finished: [10, 12, 9],
-      cuttingQuantities: [3, 3, 2],
-      tapingQuantities: [1, 1, 1],
-      hold: [2, 1, 1],
-    },
-    411: {
-      colors: ["PLUM", "VIOLET", "PEARL"],
-      finished: [8, 10, 7],
-      cuttingQuantities: [2, 3, 2],
-      tapingQuantities: [1, 2, 1],
-      hold: [1, 1, 1],
-    },
-    412: {
-      colors: ["LIME", "AQUA", "TEAL"],
-      finished: [7, 5, 4],
-      cuttingQuantities: [2, 2, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    413: {
-      colors: ["MAUVE", "TAUPE", "KHAKI"],
-      finished: [5, 6, 3],
-      cuttingQuantities: [1, 2, 1],
-      tapingQuantities: [0, 1, 1],
-      hold: [1, 1, 1],
-    },
-    414: {
-      colors: ["CRIMSON", "SCARLET", "RUBY"],
-      finished: [11, 8, 7],
-      cuttingQuantities: [3, 2, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [2, 1, 1],
-    },
-    415: {
-      colors: ["FUCHSIA", "LILAC", "AMETHYST"],
-      finished: [9, 10, 8],
-      cuttingQuantities: [2, 3, 2],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 2, 1],
-    },
-    416: {
-      colors: ["SAPPHIRE", "EMERALD", "TOPAZ"],
-      finished: [12, 14, 10],
-      cuttingQuantities: [3, 4, 2],
-      tapingQuantities: [2, 1, 1],
-      hold: [2, 3, 2],
-    },
-    417: {
-      colors: ["RUBY", "ONYX", "OPAL"],
-      finished: [10, 9, 7],
-      cuttingQuantities: [3, 2, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [2, 1, 1],
-    },
-    418: {
-      colors: ["CHERRY", "COFFEE", "MOCHA"],
-      finished: [8, 7, 6],
-      cuttingQuantities: [2, 1, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    419: {
-      colors: ["LAVENDER", "PERIWINKLE", "EGGPLANT"],
-      finished: [7, 6, 5],
-      cuttingQuantities: [2, 1, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    420: {
-      colors: ["IVORY", "CREAM", "CHAMPAGNE"],
-      finished: [9, 8, 7],
-      cuttingQuantities: [2, 1, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    421: {
-      colors: ["PEACH", "APRICOT", "MELON"],
-      finished: [10, 11, 9],
-      cuttingQuantities: [3, 3, 2],
-      tapingQuantities: [1, 1, 1],
-      hold: [2, 1, 1],
-    },
-    422: {
-      colors: ["LIME", "OLIVE", "CHARTREUSE"],
-      finished: [5, 6, 4],
-      cuttingQuantities: [2, 2, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    423: {
-      colors: ["NAVY", "INDIGO", "ULTRAMARINE"],
-      finished: [8, 9, 7],
-      cuttingQuantities: [2, 2, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    424: {
-      colors: ["AQUA", "TURQUOISE", "TEAL"],
-      finished: [6, 7, 5],
-      cuttingQuantities: [2, 1, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    425: {
-      colors: ["TANGERINE", "PERSIMMON", "CORAL"],
-      finished: [10, 9, 8],
-      cuttingQuantities: [3, 2, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [2, 1, 1],
-    },
-    426: {
-      colors: ["GOLD", "BRONZE", "COPPER"],
-      finished: [7, 6, 5],
-      cuttingQuantities: [2, 1, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    427: {
-      colors: ["PLATINUM", "SILVER", "PEWTER"],
-      finished: [9, 10, 7],
-      cuttingQuantities: [3, 2, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    428: {
-      colors: ["CARAMEL", "TOFFEE", "CHOCOLATE"],
-      finished: [8, 7, 6],
-      cuttingQuantities: [2, 2, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    429: {
-      colors: ["MUSTARD", "OCHRE", "GOLDENROD"],
-      finished: [6, 8, 7],
-      cuttingQuantities: [2, 1, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-    430: {
-      colors: ["SLATE", "SLATE", "CHARCOAL"],
-      finished: [10, 9, 8],
-      cuttingQuantities: [3, 2, 1],
-      tapingQuantities: [1, 1, 1],
-      hold: [1, 1, 1],
-    },
-  });
-
-  const sortedItemsData = useMemo(() => {
-    return Object.entries(itemsData)
-      .sort(([a], [b]) => parseInt(a) - parseInt(b))
-      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-  }, [itemsData]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [itemsData, setItemsData] = useState({});
+  const [holdItems, setHoldItems] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (searchTerm) {
-      const details = itemsData[searchTerm];
-      if (details) {
-        setItemDetails(details);
-      } else {
-        setItemDetails(null);
+    const fetchData = async () => {
+      try {
+        const collections = ['Cutting', 'Finished', 'Tapping', 'HoldItem'];
+        const data = {};
+        const holdData = {};
+
+        // Fetch available colors
+        const colorsSnapshot = await getDocs(collection(db, 'colors'));
+        const colors = [];
+        colorsSnapshot.forEach(doc => {
+          colors.push(doc.data().color);
+        });
+        console.log("Fetched colors:", colors);
+
+        // Initialize items data
+        for (const collectionName of collections) {
+          console.log(`Fetching data from ${collectionName} collection`);
+          const querySnapshot = await getDocs(collection(db, collectionName));
+          querySnapshot.forEach(doc => {
+            const docData = doc.data();
+            console.log(`Document data for ${collectionName}:`, docData);
+            if (docData.itemCode) {
+              if (!data[docData.itemCode]) {
+                data[docData.itemCode] = {
+                  colors: colors,
+                  finished: Array(colors.length).fill(0),
+                  cuttingQuantities: Array(colors.length).fill(0),
+                  tapingQuantities: Array(colors.length).fill(0),
+                };
+              }
+
+              let quantityField;
+              if (collectionName === 'Cutting') {
+                quantityField = 'stockByColor';
+              } else if (collectionName === 'Finished') {
+                quantityField = 'finishedQuantities';
+              } else if (collectionName === 'Tapping') {
+                quantityField = 'tapedQuantities';
+              } else if (collectionName === 'HoldItem') {
+                quantityField = 'quantity';
+                holdData[docData.itemCode] = {};
+                colors.forEach(color => {
+                  holdData[docData.itemCode][color] = docData.quantity?.[color] || 0;
+                });
+              }
+
+              if (docData[quantityField] && collectionName !== 'HoldItem') {
+                const sourceData = docData[quantityField];
+                if (typeof sourceData === 'object') {
+                  Object.entries(sourceData).forEach(([color, quantity]) => {
+                    if (data[docData.itemCode].colors.includes(color)) {
+                      const colorIndex = data[docData.itemCode].colors.indexOf(color);
+                      const parsedQuantity = parseInt(quantity, 10);
+                      if (!isNaN(parsedQuantity)) {
+                        if (collectionName === 'Cutting') {
+                          data[docData.itemCode].cuttingQuantities[colorIndex] = parsedQuantity;
+                        } else if (collectionName === 'Finished') {
+                          data[docData.itemCode].finished[colorIndex] = parsedQuantity;
+                        } else if (collectionName === 'Tapping') {
+                          data[docData.itemCode].tapingQuantities[colorIndex] = parsedQuantity;
+                        }
+                      } else {
+                        console.warn(`Invalid quantity for ${collectionName}, itemCode: ${docData.itemCode}, color: ${color}`);
+                      }
+                    }
+                  });
+                } else {
+                  console.warn(`Unexpected data structure for ${collectionName}, itemCode: ${docData.itemCode}`);
+                }
+              }
+            }
+          });
+        }
+
+        console.log("Final data structure:", data);
+        console.log("Hold data:", holdData);
+
+        setItemsData(data);
+        setHoldItems(holdData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
       }
-    } else {
-      setItemDetails(null);
-    }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    console.log("Updated itemsData:", itemsData);
+    console.log("Updated holdItems:", holdItems);
+  }, [itemsData, holdItems]);
+
+  const filteredItems = useMemo(() => {
+    return Object.entries(itemsData).filter(([itemCode]) =>
+      itemCode.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   }, [searchTerm, itemsData]);
 
-  const handleHoldChange = (itemCode, index) => (e) => {
-    const newHoldValue = parseInt(e.target.value, 10) || 0;
-    setItemsData((prevData) => {
-      const updatedData = { ...prevData };
-      updatedData[itemCode].hold[index] = newHoldValue;
-      return updatedData;
-    });
+  const handleHoldChange = (itemCode, color) => async (e) => {
+    const newHoldValue = e.target.value;
+    if (/^\d*$/.test(newHoldValue)) {
+      const parsedValue = parseInt(newHoldValue, 10) || 0;
+      setHoldItems((prevHoldItems) => ({
+        ...prevHoldItems,
+        [itemCode]: {
+          ...prevHoldItems[itemCode],
+          [color]: parsedValue,
+        },
+      }));
+
+      try {
+        const holdItemRef = doc(db, 'HoldItem', itemCode);
+        const holdItemDoc = await getDoc(holdItemRef);
+
+        if (holdItemDoc.exists()) {
+          await updateDoc(holdItemRef, { 
+            [`quantity.${color}`]: parsedValue,
+            lastUpdated: new Date()
+          });
+        } else {
+          await setDoc(holdItemRef, { 
+            itemCode: itemCode,
+            quantity: { [color]: parsedValue },
+            lastUpdated: new Date()
+          });
+        }
+
+        console.log(`Hold value updated for item code ${itemCode}, color ${color}`);
+      } catch (error) {
+        console.error("Error updating Firestore:", error);
+      }
+    }
   };
 
   const getCellClass = (value) => {
@@ -252,49 +153,54 @@ const Dashboard = () => {
     return 'quantity-high';
   };
 
-  const renderTable = (item, itemCode) => (
-    <table className="excel-table">
-      <thead>
-        <tr>
-          <th className="item-header">ITEM</th>
-          <th className="code-header" colSpan={4}>
-            {itemCode}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td className="label">COLOUR</td>
-          <td className="label">CUTTING</td>
-          <td className="label">TAPING</td>
-          <td className="label">FINISHED</td>
-          <td className="label">HOLD</td>
-        </tr>
-        {item.colors.map((color, index) => (
-          <tr key={index}>
-            <td className="color-cell">{color}</td>
-            <td className={`quantity ${getCellClass(item.cuttingQuantities[index])}`}>
-              {item.cuttingQuantities[index]}
-            </td>
-            <td className={`quantity ${getCellClass(item.tapingQuantities[index])}`}>
-              {item.tapingQuantities[index]}
-            </td>
-            <td className={`quantity ${getCellClass(item.finished[index])}`}>
-              {item.finished[index]}
-            </td>
-            <td className="quantity">
-              <input
-                type="number"
-                value={item.hold[index]}
-                onChange={handleHoldChange(itemCode, index)}
-                className="hold-input"
-              />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+  const renderTable = (item, itemCode) => {
+    return (
+      <div key={itemCode} className="item-table-container">
+        <table className="excel-table">
+          <thead>
+            <tr>
+              <th className="item-header">ITEM</th>
+              <th className="code-header" colSpan={5}>
+                {itemCode}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="label">COLOUR</td>
+              <td className="label">CUTTING</td>
+              <td className="label">TAPING</td>
+              <td className="label">FINISHED</td>
+              <td className="label">HOLD</td>
+            </tr>
+            {item.colors.map((color, index) => (
+              <tr key={index}>
+                <td className="color-cell">{color}</td>
+                <td className={`quantity ${getCellClass(item.cuttingQuantities[index])}`}>
+                  {item.cuttingQuantities[index]}
+                </td>
+                <td className={`quantity ${getCellClass(item.tapingQuantities[index])}`}>
+                  {item.tapingQuantities[index]}
+                </td>
+                <td className={`quantity ${getCellClass(item.finished[index])}`}>
+                  {item.finished[index]}
+                </td>
+                <td className="quantity">
+                  <input
+                    type="text"
+                    value={holdItems[itemCode]?.[color] || ''}
+                    onChange={handleHoldChange(itemCode, color)}
+                    className="hold-input"
+                    pattern="\d*"
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   return (
     <div className="dashboard">
@@ -309,22 +215,15 @@ const Dashboard = () => {
       </div>
 
       <div className="excel-sheet">
-        {itemDetails ? (
-          renderTable(itemDetails, searchTerm)
+        {loading ? (
+          <p className="loading">Loading...</p>
         ) : (
-          searchTerm && (
-            <p className="no-item-found">Enter a valid item code to search.</p>
+          filteredItems.length > 0 ? (
+            filteredItems.map(([itemCode, item]) => renderTable(item, itemCode))
+          ) : (
+            <p className="no-item-found">No items found</p>
           )
         )}
-      </div>
-
-      <div className="excel-sheet items-list">
-        <h3 className="sheet-title">All Items</h3>
-        {Object.entries(sortedItemsData).map(([itemCode, item]) => (
-          <div key={itemCode} className="item-table-container">
-            {renderTable(item, itemCode)}
-          </div>
-        ))}
       </div>
     </div>
   );

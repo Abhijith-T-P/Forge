@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import './AddSalesMan.css';
 
@@ -43,6 +43,15 @@ const AddSalesMan = () => {
     }
   };
 
+  const deleteSalesMan = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'SalesMen', id));
+      fetchSalesmen();
+    } catch (error) {
+      console.error("Error deleting salesman: ", error);
+    }
+  };
+
   return (
     <div className="add-salesman-container">
       <h2>Add SalesMan</h2>
@@ -76,6 +85,7 @@ const AddSalesMan = () => {
                 onChange={(e) => setNewPassword(e.target.value)}
               />
               <button onClick={() => resetPassword(salesman.id)}>Reset Password</button>
+              <button onClick={() => deleteSalesMan(salesman.id)} className="delete-button">Delete</button>
             </div>
           </li>
         ))}

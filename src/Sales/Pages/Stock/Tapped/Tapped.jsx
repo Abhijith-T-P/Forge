@@ -1,194 +1,57 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { getDocs, collection } from 'firebase/firestore';
+import { db } from '../../../../config/firebase';
 import './Tapped.css';
 
 const Tapped = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const itemsData = useMemo(
-    () => ({
-      401: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [10, 15, 5],
-        cuttingQuantities: [3, 8, 2],
-        tapingQuantities: [1, 4, 1],
-      },
-      402: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [20, 0, 5],
-        cuttingQuantities: [6, 0, 2],
-        tapingQuantities: [2, 0, 1],
-      },
-      403: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [0, 12, 0],
-        cuttingQuantities: [5, 10, 19],
-        tapingQuantities: [2, 7, 3],
-      },
-      404: {
-        colors: ["BLUE", "GREEN"],
-        finished: [5, 2,3],
-        cuttingQuantities: [10, 20,3],
-        tapingQuantities: [5, 10,3],
-      },
-      405: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [3, 0, 0],
-        cuttingQuantities: [8, 0, 0],
-        tapingQuantities: [3, 0, 0],
-      },
-      406: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [6, 0, 10],
-        cuttingQuantities: [12, 0, 6],
-        tapingQuantities: [8, 0, 59],
-      },
-      407: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [0, 0, 0],
-        cuttingQuantities: [0, 0, 0],
-        tapingQuantities: [0, 0, 0],
-      },
-      408: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [0, 0, 0],
-        cuttingQuantities: [0, 0, 0],
-        tapingQuantities: [0, 0, 0],
-      },
-      409: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [10, 5, 12],
-        cuttingQuantities: [2, 7, 6],
-        tapingQuantities: [3, 2, 4],
-      },
-      410: {
-        colors: ["BLUE", "GREEN", "RED"],
-        finished: [4, 8, 6],
-        cuttingQuantities: [3, 5, 7],
-        tapingQuantities: [1, 2, 3],
-      },
-      411: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [7, 3, 9],
-        cuttingQuantities: [6, 2, 8],
-        tapingQuantities: [5, 1, 4],
-      },
-      412: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [11, 2, 5],
-        cuttingQuantities: [7, 4, 3],
-        tapingQuantities: [3, 0, 6],
-      },
-      413: {
-        colors: ["GREEN", "BLUE", "RED"],
-        finished: [8, 7, 1],
-        cuttingQuantities: [5, 6, 2],
-        tapingQuantities: [4, 3, 1],
-      },
-      414: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [15, 9, 6],
-        cuttingQuantities: [8, 4, 3],
-        tapingQuantities: [6, 2, 1],
-      },
-      415: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [12, 4, 3],
-        cuttingQuantities: [2, 7, 5],
-        tapingQuantities: [1, 3, 2],
-      },
-      416: {
-        colors: ["GREEN", "BLUE", "RED"],
-        finished: [9, 11, 2],
-        cuttingQuantities: [6, 3, 4],
-        tapingQuantities: [2, 1, 3],
-      },
-      417: {
-        colors: ["BLUE", "RED", "GREEN"],
-        finished: [7, 6, 10],
-        cuttingQuantities: [4, 5, 7],
-        tapingQuantities: [3, 2, 1],
-      },
-      418: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [8, 4, 7],
-        cuttingQuantities: [5, 3, 6],
-        tapingQuantities: [2, 1, 4],
-      },
-      419: {
-        colors: ["BLUE", "GREEN", "RED"],
-        finished: [11, 10, 5],
-        cuttingQuantities: [6, 4, 2],
-        tapingQuantities: [3, 1, 2],
-      },
-      420: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [3, 5, 6],
-        cuttingQuantities: [2, 5, 3],
-        tapingQuantities: [1, 2, 4],
-      },
-      421: {
-        colors: ["RED", "GREEN", "BLUE"],
-        finished: [6, 8, 4],
-        cuttingQuantities: [4, 5, 2],
-        tapingQuantities: [1, 2, 3],
-      },
-      422: {
-        colors: ["BLUE", "GREEN", "RED"],
-        finished: [5, 7, 9],
-        cuttingQuantities: [3, 6, 5],
-        tapingQuantities: [2, 1, 4],
-      },
-      423: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [2, 9, 6],
-        cuttingQuantities: [1, 7, 5],
-        tapingQuantities: [3, 2, 1],
-      },
-      424: {
-        colors: ["GREEN", "RED", "BLUE"],
-        finished: [4, 11, 7],
-        cuttingQuantities: [2, 8, 5],
-        tapingQuantities: [1, 3, 2],
-      },
-      425: {
-        colors: ["BLUE", "RED", "GREEN"],
-        finished: [10, 6, 5],
-        cuttingQuantities: [4, 5, 7],
-        tapingQuantities: [2, 3, 4],
-      },
-      426: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [7, 8, 6],
-        cuttingQuantities: [3, 4, 2],
-        tapingQuantities: [1, 2, 3],
-      },
-      427: {
-        colors: ["GREEN", "BLUE", "RED"],
-        finished: [9, 3, 8],
-        cuttingQuantities: [5, 2, 6],
-        tapingQuantities: [3, 1, 4],
-      },
-      428: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [6, 8, 10],
-        cuttingQuantities: [4, 5, 3],
-        tapingQuantities: [2, 2, 1],
-      },
-      429: {
-        colors: ["RED", "BLUE", "GREEN"],
-        finished: [5, 7, 9],
-        cuttingQuantities: [2, 6, 4],
-        tapingQuantities: [1, 3, 2],
-      },
-      430: {
-        colors: ["GREEN", "RED", "BLUE"],
-        finished: [8, 3, 7],
-        cuttingQuantities: [6, 2, 5],
-        tapingQuantities: [3, 1, 4],
-      },
-    }),
-    []
-  );
-  
+  const [itemsData, setItemsData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [availableColors, setAvailableColors] = useState([]);
+
+  useEffect(() => {
+    const fetchItemsData = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'Tapping'));
+        const data = {};
+        querySnapshot.forEach((doc) => {
+          const docData = doc.data();
+          if (docData.itemCode && docData.tapedQuantities) {
+            if (!data[docData.itemCode]) {
+              data[docData.itemCode] = { tapedQuantities: {} };
+            }
+            Object.entries(docData.tapedQuantities).forEach(([color, quantity]) => {
+              if (!data[docData.itemCode].tapedQuantities[color]) {
+                data[docData.itemCode].tapedQuantities[color] = 0;
+              }
+              data[docData.itemCode].tapedQuantities[color] += quantity;
+            });
+          }
+        });
+        setItemsData(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching Tapped data:", error);
+        setLoading(false);
+      }
+    };
+
+    const fetchColors = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'colors'));
+        const colors = [];
+        querySnapshot.forEach((doc) => {
+          colors.push(doc.data().color);
+        });
+        setAvailableColors(colors);
+      } catch (error) {
+        console.error("Error fetching colors:", error);
+      }
+    };
+
+    fetchItemsData();
+    fetchColors();
+  }, []);
 
   const filteredItems = useMemo(() => {
     return Object.entries(itemsData).filter(([itemCode]) =>
@@ -216,35 +79,36 @@ const Tapped = () => {
         <thead>
           <tr>
             <th>ITEM</th>
-            <th>RED</th>
-            <th>BLUE</th>
-            <th>GREEN</th>
+            {availableColors.map(color => (
+              <th key={color}>{color}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {filteredItems.length > 0 ? (
-            filteredItems.map(([itemCode, data]) => (
-              <tr key={itemCode}>
-                <td>{itemCode}</td>
-                {['RED', 'BLUE', 'GREEN'].map((color) => {
-                  const colorIndex = data.colors.indexOf(color);
-                  return (
-                    <td
-                      key={`${itemCode}-${color}`}
-                      className={`quantity ${getCellClass(
-                        colorIndex !== -1 ? data.tapingQuantities[colorIndex] : 0
-                      )}`}
-                    >
-                      {colorIndex !== -1 ? data.tapingQuantities[colorIndex] : 0}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))
-          ) : (
+          {loading ? (
             <tr>
-              <td colSpan="4" className="no-item-found">No items found</td>
+              <td colSpan={availableColors.length + 1} className="loading">Loading...</td>
             </tr>
+          ) : (
+            filteredItems.length > 0 ? (
+              filteredItems.map(([itemCode, data]) => (
+                <tr key={itemCode}>
+                  <td className="item-code">{itemCode}</td>
+                  {availableColors.map((color) => {
+                    const quantity = data.tapedQuantities[color] || 0;
+                    return (
+                      <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
+                        {quantity}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={availableColors.length + 1} className="no-item-found">No items found</td>
+              </tr>
+            )
           )}
         </tbody>
       </table>

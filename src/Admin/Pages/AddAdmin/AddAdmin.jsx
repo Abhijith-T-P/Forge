@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import './AddAdmin.css';
 
@@ -43,6 +43,15 @@ const AddAdmin = () => {
     }
   };
 
+  const deleteAdmin = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'Admins', id));
+      fetchAdmins();
+    } catch (error) {
+      console.error("Error deleting admin: ", error);
+    }
+  };
+
   return (
     <div className="add-admin-container">
       <h2>Add Admin</h2>
@@ -76,6 +85,9 @@ const AddAdmin = () => {
                 onChange={(e) => setNewPassword(e.target.value)}
               />
               <button onClick={() => resetPassword(admin.id)}>Reset Password</button>
+              {admins.length > 1 && (
+                <button onClick={() => deleteAdmin(admin.id)} className="delete-button">Delete</button>
+              )}
             </div>
           </li>
         ))}
