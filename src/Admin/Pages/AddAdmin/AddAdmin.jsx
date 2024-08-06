@@ -54,6 +54,7 @@ const AddAdmin = () => {
 
   return (
     <div className="add-admin-container">
+      
       <h2>Add Admin</h2>
       <form onSubmit={addAdmin} className="admin-form">
         <input
@@ -92,6 +93,11 @@ const AddAdmin = () => {
           </li>
         ))}
       </ul>
+      <div className="firebase-details">
+        <p><strong>Firebase Database Details:</strong></p>
+        <p><strong>Gmail:</strong> supplycraft1@gmail.com</p>
+        <p><strong>Password:</strong> Supplycraft@1234</p>
+      </div>
     </div>
   );
 };

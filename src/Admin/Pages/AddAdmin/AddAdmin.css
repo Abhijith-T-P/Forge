@@ -43,4 +43,18 @@
   .admin-item input {
     margin-right: 10px;
   }
+  .firebase-details {
+    margin-top: 20px;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+  }
+  
+  .firebase-details p {
+    margin: 5px 0;
+    font-size: 14px;
+  }
+  
+  .firebase-details p strong {
+    font-weight: bold;
+  }
   
