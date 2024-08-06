@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getDocs, collection, updateDoc, setDoc, doc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
+import { Link } from 'react-router-dom'; // Import Link for navigation
 import './Sold.css'; // Ensure this file exists and is correctly named
 
 const Sold = () => {
@@ -149,6 +150,9 @@ const Sold = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="search-bar"
       />
+      <div className="link-to-sold-data">
+        <Link to="../SoldData" className="sales-data-link">Sales data</Link>
+      </div>
       <form onSubmit={handleSubmit}>
         <table className="excel-table">
           <thead>
@@ -197,6 +201,7 @@ const Sold = () => {
         </table>
         <button type="submit" className="submit-button">Submit</button>
       </form>
+      
     </div>
   );
 };

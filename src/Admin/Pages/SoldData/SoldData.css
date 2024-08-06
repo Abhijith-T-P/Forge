@@ -1,0 +1,134 @@
+.sold-data-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .sold-data-container h1 {
+    color: var(--primary-dark);
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .search-bar {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .excel-table th,
+  .excel-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid var(--border-color);
+  }
+  
+  .excel-table th {
+    background-color: var(--primary-light);
+    color: var(--text-color);
+    font-weight: bold;
+  }
+  
+  .excel-table tr:nth-child(even) {
+    background-color: var(--highlight);
+  }
+  
+  .item-code {
+    font-weight: bold;
+    color: var(--primary-dark);
+  }
+  
+  .quantity {
+    text-align: right;
+  }
+  
+  .quantity.zero {
+    background-color: var(--red);
+    color: white;
+  }
+  
+  .quantity.low {
+    background-color: var(--accent);
+  }
+  
+  .loading,
+  .no-item-found,
+  .error {
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+  }
+  
+  .error {
+    color: var(--red);
+  }
+
+  .export-buttons {
+    margin-bottom: 10px;
+  }
+  
+  .export-pdf-button,
+  .export-excel-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+  
+  .export-pdf-button:hover,
+  .export-excel-button:hover {
+    background-color: #45a049;
+  }
+  .export-pdf-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  
+  .export-pdf-button:hover {
+    background-color: #45a049;
+  }
+    
+  
+  @media (max-width: 768px) {
+    .sold-data-container {
+      padding: 10px;
+    }
+  
+    .excel-table th,
+    .excel-table td {
+      padding: 8px;
+      font-size: 14px;
+    }
+  
+    .search-bar {
+      font-size: 14px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .excel-table th,
+    .excel-table td {
+      padding: 6px;
+      font-size: 12px;
+    }
+  
+    .search-bar {
+      font-size: 12px;
+    }
+  }
