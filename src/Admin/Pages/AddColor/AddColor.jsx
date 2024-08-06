@@ -6,6 +6,7 @@ import { addDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/f
 const AddColor = () => {
   const [colorName, setColorName] = useState('');
   const [colors, setColors] = useState([]);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     // Fetch colors from Firebase on component mount
@@ -31,7 +32,11 @@ const AddColor = () => {
         await addDoc(collection(db, 'colors'), { color: newColor });
         setColors([...colors, newColor]);
         setColorName('');
-        alert('Color added successfully!');
+        setSuccessMessage('Color added successfully!');
+        
+        setTimeout(() => {
+          setSuccessMessage('');
+        }, 5000);
       } catch (error) {
         console.error("Error adding color: ", error);
         alert('Failed to add color.');
@@ -68,6 +73,7 @@ const AddColor = () => {
         />
         <button onClick={handleAddColor} className="add-color-btn">Add Color</button>
       </div>
+      {successMessage && <div className="success-message">{successMessage}</div>}
       <div className="color-list">
         <h3>Available Colors</h3>
         <table className="color-table">

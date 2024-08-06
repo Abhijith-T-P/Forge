@@ -1,124 +1,138 @@
-/* Sold.css */
-
-.sold-list {
+/* Scoped container for the Sold page */
+.sold-page-container {
     padding: 20px;
+    background-color: var(--background);
   }
   
-  .search-bar {
+  /* Scoped styling for the search bar */
+  .sold-search-bar {
     width: 100%;
+    max-width: 100%;
     padding: 10px;
     margin-bottom: 20px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    font-size: 16px;
+    box-sizing: border-box; /* Ensures padding is included in width */
   }
   
-  .excel-table {
-    width: 100%;
-    border-collapse: collapse;
+  /* Scoped styling for the link to Sold data as a button */
+  .sold-data-link-container {
     margin-bottom: 20px;
   }
   
-  .excel-table th,
-  .excel-table td {
-    border: 1px solid var(--border-color);
-    padding: 8px;
-    text-align: center;
-  }
-  
-  .excel-table th {
-    background-color: var(--highlight);
-    color: var(--text-color);
-  }
-  
-  .quantity-input input {
-    width: 100%;
-    padding: 5px;
-    box-sizing: border-box;
-  }
-  
-  .loading,
-  .no-item-found {
-    text-align: center;
-    padding: 20px;
-    font-size: 16px;
-    color: var(--text-color);
-  }
-  
-  .submit-button {
+  .sold-data-button {
+    display: inline-block;
+    padding: 10px 20px;
     background-color: var(--primary);
     color: var(--text-color);
-    padding: 10px 20px;
     border: none;
     border-radius: 4px;
-    font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .submit-button:hover {
-    background-color: var(--primary-dark);
-  }
- 
-  
-  .sales-data-link {
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    color: var(--text-color);
-    background-color: var(--primary);
-    border: 2px solid var(--primary-dark);
-    border-radius: 5px;
     text-decoration: none;
-    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+    font-size: 16px;
+    text-align: center;
   }
   
-  .sales-data-link:hover {
+  .sold-data-button:hover {
     background-color: var(--primary-dark);
-    border-color: var(--primary);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
   
-  .sales-data-link:active {
+  /* Scoped styling for the table */
+  .sold-excel-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .sold-excel-table th, .sold-excel-table td {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+  }
+  
+  .sold-excel-table th {
     background-color: var(--primary-light);
-    border-color: var(--primary-dark);
   }
   
-  /* Responsive Styles */
+  .sold-excel-table td {
+    background-color: var(--background);
+  }
+  
+  .sold-loading {
+    text-align: center;
+  }
+  
+  .sold-no-item-found {
+    text-align: center;
+    color: var(--text-color);
+  }
+  
+  /* Scoped styling for input fields within the table */
+  .sold-quantity-input input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box; /* Ensures padding is included in width */
+    text-align: right; /* Aligns text to the right */
+  }
+  
+  /* Scoped styling for the submit button */
+  .sold-submit-button {
+    padding: 10px 20px;
+    background-color: var(--primary);
+    color: var(--text-color);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+  }
+  
+  .sold-submit-button:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  /* Responsive design for smaller screens */
   @media (max-width: 768px) {
-    .excel-table, .excel-table thead, .excel-table tbody, .excel-table th, .excel-table td, .excel-table tr {
-      display: block;
-    }
-  
-    .excel-table th {
-      text-align: right;
-    }
-  
-    .excel-table td {
-      text-align: left;
-      position: relative;
-      padding-left: 50%;
-    }
-  
-    .excel-table td:before {
-      content: attr(data-label);
-      position: absolute;
-      left: 0;
-      width: 45%;
-      padding-left: 10px;
-      font-weight: bold;
-      text-align: left;
-    }
-  
-    .quantity-input input {
+    .sold-search-bar {
       padding: 8px;
-      margin: 5px 0;
+      font-size: 14px;
     }
   
-    .submit-button {
-      width: 100%;
-      padding: 15px;
-      font-size: 18px;
+    .sold-excel-table th, .sold-excel-table td {
+      padding: 8px;
+      font-size: 14px;
+    }
+  
+    .sold-submit-button {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+  
+    .sold-data-button {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .sold-search-bar {
+      font-size: 12px;
+    }
+  
+    .sold-excel-table th, .sold-excel-table td {
+      padding: 6px;
+      font-size: 12px;
+    }
+  
+    .sold-submit-button {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+  
+    .sold-data-button {
+      padding: 6px 12px;
+      font-size: 12px;
     }
   }
   

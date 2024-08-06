@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import './Cutting.css';
-import { getDocs, collection } from 'firebase/firestore';
+import { getDocs, collection, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
+import './Cutting.css';
 
 const Cutting = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsData, setItemsData] = useState({});
   const [loading, setLoading] = useState(true);
   const [availableColors, setAvailableColors] = useState([]);
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     const fetchItemsData = async () => {
@@ -49,6 +50,39 @@ const Cutting = () => {
     );
   }, [searchTerm, itemsData]);
 
+  const handleEditClick = () => {
+    setEditMode((prev) => !prev);
+  };
+
+  const handleQuantityChange = (itemCode, color, value) => {
+    setItemsData((prevData) => ({
+      ...prevData,
+      [itemCode]: {
+        ...prevData[itemCode],
+        stockByColor: {
+          ...prevData[itemCode].stockByColor,
+          [color]: value,
+        },
+      },
+    }));
+  };
+
+  const saveChanges = async () => {
+    try {
+      await Promise.all(
+        Object.entries(itemsData).map(async ([itemCode, data]) => {
+          const itemRef = doc(db, 'Cutting', itemCode);
+          await updateDoc(itemRef, {
+            stockByColor: data.stockByColor,
+          });
+        })
+      );
+      alert('Changes saved successfully!');
+    } catch (error) {
+      console.error("Error saving changes:", error);
+    }
+  };
+
   const getCellClass = (value) => {
     if (value === 0) return "quantity-zero";
     if (value > 0 && value < 5) return "quantity-low";
@@ -65,6 +99,14 @@ const Cutting = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="search-bar"
       />
+      <button onClick={handleEditClick}>
+        {editMode ? 'Save Changes' : 'Edit'}
+      </button>
+      {editMode && (
+        <button onClick={saveChanges}>
+          Save All Changes
+        </button>
+      )}
       <table className="excel-table">
         <thead>
           <tr>
@@ -88,7 +130,16 @@ const Cutting = () => {
                     const quantity = data.stockByColor?.[color] || 0;
                     return (
                       <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
-                        {quantity}
+                        {editMode ? (
+                          <input
+                            type="number"
+                            value={quantity}
+                            onChange={(e) => handleQuantityChange(itemCode, color, e.target.value)}
+                            className="quantity-input"
+                          />
+                        ) : (
+                          quantity
+                        )}
                       </td>
                     );
                   })}

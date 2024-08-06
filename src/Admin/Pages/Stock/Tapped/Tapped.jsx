@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getDocs, collection } from 'firebase/firestore';
+import { getDocs, collection, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 import './Tapped.css';
 
@@ -8,6 +8,7 @@ const Tapped = () => {
   const [itemsData, setItemsData] = useState({});
   const [loading, setLoading] = useState(true);
   const [availableColors, setAvailableColors] = useState([]);
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     const fetchItemsData = async () => {
@@ -59,6 +60,39 @@ const Tapped = () => {
     );
   }, [searchTerm, itemsData]);
 
+  const handleEditClick = () => {
+    setEditMode((prev) => !prev);
+  };
+
+  const handleQuantityChange = (itemCode, color, value) => {
+    setItemsData((prevData) => ({
+      ...prevData,
+      [itemCode]: {
+        ...prevData[itemCode],
+        tapedQuantities: {
+          ...prevData[itemCode].tapedQuantities,
+          [color]: value,
+        },
+      },
+    }));
+  };
+
+  const saveChanges = async () => {
+    try {
+      await Promise.all(
+        Object.entries(itemsData).map(async ([itemCode, data]) => {
+          const itemRef = doc(db, 'Tapping', itemCode);
+          await updateDoc(itemRef, {
+            tapedQuantities: data.tapedQuantities,
+          });
+        })
+      );
+      alert('Changes saved successfully!');
+    } catch (error) {
+      console.error("Error saving changes:", error);
+    }
+  };
+
   const getCellClass = (value) => {
     if (value === 0) return "quantity-zero";
     if (value > 0 && value < 5) return "quantity-low";
@@ -75,6 +109,14 @@ const Tapped = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="search-bar"
       />
+      <button onClick={handleEditClick}>
+        {editMode ? 'Save Changes' : 'Edit'}
+      </button>
+      {editMode && (
+        <button onClick={saveChanges}>
+          Save All Changes
+        </button>
+      )}
       <table className="excel-table">
         <thead>
           <tr>
@@ -98,7 +140,16 @@ const Tapped = () => {
                     const quantity = data.tapedQuantities[color] || 0;
                     return (
                       <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
-                        {quantity}
+                        {editMode ? (
+                          <input
+                            type="number"
+                            value={quantity}
+                            onChange={(e) => handleQuantityChange(itemCode, color, e.target.value)}
+                            className="quantity-input"
+                          />
+                        ) : (
+                          quantity
+                        )}
                       </td>
                     );
                   })}

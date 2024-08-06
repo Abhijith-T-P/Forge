@@ -12,6 +12,7 @@ import AddAdmin from "./Pages/AddAdmin/AddAdmin";
 import AddSalesMan from "./Pages/AddSalesMan/AddSalesMan";
 import Sold from "./Pages/Sold/Sold";
 import SoldData from "./Pages/SoldData/SoldData";
+import Analytics from "./Pages/Analytics/Analytics";
 
 const App = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -37,6 +38,7 @@ const App = () => {
             <Route path="/AddSalesMan" element={<AddSalesMan />} />
             <Route path="/Sold" element={<Sold />} />
             <Route path="/SoldData" element={<SoldData />} />
+            <Route path="/Analytics" element={<Analytics />} />
             
           </Routes>
         </div>

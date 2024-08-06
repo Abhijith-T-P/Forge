@@ -142,19 +142,19 @@ const Sold = () => {
   };
 
   return (
-    <div className="sold-list">
+    <div className="sold-page-container">
       <input
         type="text"
         placeholder="Search by item code..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="search-bar"
+        className="sold-search-bar"
       />
-      <div className="link-to-sold-data">
-        <Link to="../SoldData" className="sales-data-link">Sales data</Link>
+      <div className="sold-data-link-container">
+        <Link to="../SoldData" className="sold-data-button">Sales data</Link>
       </div>
       <form onSubmit={handleSubmit}>
-        <table className="excel-table">
+        <table className="sold-excel-table">
           <thead>
             <tr>
               <th>ITEM</th>
@@ -166,7 +166,7 @@ const Sold = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={availableColors.length + 1} className="loading">Loading...</td>
+                <td colSpan={availableColors.length + 1} className="sold-loading">Loading...</td>
               </tr>
             ) : (
               filteredItems.length > 0 ? (
@@ -176,7 +176,7 @@ const Sold = () => {
                     {availableColors.map(color => {
                       const total = data[color] || 0;
                       return (
-                        <td key={`${itemCode}-${color}`} data-label={color} className="quantity-input">
+                        <td key={`${itemCode}-${color}`} data-label={color} className="sold-quantity-input">
                           <input
                             type="number"
                             value={inputValues[itemCode]?.[color] || ''}
@@ -191,7 +191,7 @@ const Sold = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={availableColors.length + 1} className="no-item-found">
+                  <td colSpan={availableColors.length + 1} className="sold-no-item-found">
                     No items found
                   </td>
                 </tr>
@@ -199,9 +199,8 @@ const Sold = () => {
             )}
           </tbody>
         </table>
-        <button type="submit" className="submit-button">Submit</button>
+        <button type="submit" className="sold-submit-button">Submit</button>
       </form>
-      
     </div>
   );
 };

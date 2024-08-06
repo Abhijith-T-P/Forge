@@ -8,6 +8,7 @@ const Finished = () => {
   const [itemsData, setItemsData] = useState({});
   const [loading, setLoading] = useState(true);
   const [availableColors, setAvailableColors] = useState([]);
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     const fetchItemsData = async () => {
@@ -51,6 +52,23 @@ const Finished = () => {
     );
   }, [searchTerm, itemsData]);
 
+  const handleEditClick = () => {
+    setEditMode((prev) => !prev);
+  };
+
+  const handleQuantityChange = (itemCode, color, value) => {
+    setItemsData((prevData) => ({
+      ...prevData,
+      [itemCode]: {
+        ...prevData[itemCode],
+        finishedQuantities: {
+          ...prevData[itemCode].finishedQuantities,
+          [color]: value,
+        },
+      },
+    }));
+  };
+
   const getCellClass = (value) => {
     if (value === 0) return "quantity-zero";
     if (value > 0 && value < 5) return "quantity-low";
@@ -67,6 +85,9 @@ const Finished = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="search-bar"
       />
+      <button onClick={handleEditClick}>
+        {editMode ? 'Save' : 'Edit'}
+      </button>
       <table className="excel-table">
         <thead>
           <tr>
@@ -90,7 +111,16 @@ const Finished = () => {
                     const quantity = data.finishedQuantities?.[color] || 0;
                     return (
                       <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
-                        {quantity}
+                        {editMode ? (
+                          <input
+                            type="number"
+                            value={quantity}
+                            onChange={(e) => handleQuantityChange(itemCode, color, e.target.value)}
+                            className="quantity-input"
+                          />
+                        ) : (
+                          quantity
+                        )}
                       </td>
                     );
                   })}
