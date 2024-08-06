@@ -57,6 +57,22 @@
     background-color: var(--background);
   }
   
+  /* Additional CSS for displaying max values */
+.input-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .sold-quantity-input input {
+    width: 80px; /* Adjust as needed */
+  }
+  
+  .max-value {
+    margin-left: 10px;
+    font-size: 0.9em;
+    color: var(--text-color);
+  }
+  
   .sold-loading {
     text-align: center;
   }

@@ -5,6 +5,7 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
 import './SoldData.css';
+import { Link } from 'react-router-dom';
 
 const SoldData = () => {
   const [soldItems, setSoldItems] = useState({});
@@ -115,6 +116,9 @@ const SoldData = () => {
       <div className="export-buttons">
         <button onClick={exportToPDF} className="export-pdf-button">Export as PDF</button>
         <button onClick={exportToExcel} className="export-excel-button">Export as Excel</button>
+      </div>
+      <div className="sold-data-link-container">
+        <Link to="../Sold" className="sold-data-button">Back</Link>
       </div>
       <table id="sold-data-table" className="excel-table">
         <thead>
