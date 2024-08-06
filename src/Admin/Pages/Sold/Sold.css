@@ -1,0 +1,100 @@
+/* Sold.css */
+
+.sold-list {
+    padding: 20px;
+  }
+  
+  .search-bar {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .excel-table th,
+  .excel-table td {
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .excel-table th {
+    background-color: var(--highlight);
+    color: var(--text-color);
+  }
+  
+  .quantity-input input {
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+  }
+  
+  .loading,
+  .no-item-found {
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    color: var(--text-color);
+  }
+  
+  .submit-button {
+    background-color: var(--primary);
+    color: var(--text-color);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .submit-button:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .excel-table, .excel-table thead, .excel-table tbody, .excel-table th, .excel-table td, .excel-table tr {
+      display: block;
+    }
+  
+    .excel-table th {
+      text-align: right;
+    }
+  
+    .excel-table td {
+      text-align: left;
+      position: relative;
+      padding-left: 50%;
+    }
+  
+    .excel-table td:before {
+      content: attr(data-label);
+      position: absolute;
+      left: 0;
+      width: 45%;
+      padding-left: 10px;
+      font-weight: bold;
+      text-align: left;
+    }
+  
+    .quantity-input input {
+      padding: 8px;
+      margin: 5px 0;
+    }
+  
+    .submit-button {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+    }
+  }
+  

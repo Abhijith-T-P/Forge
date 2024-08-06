@@ -10,6 +10,7 @@ import AddColor from "./Pages/AddColor/AddColor";
 import AddCode from "./Pages/AddCode/AddCode";
 import AddAdmin from "./Pages/AddAdmin/AddAdmin";
 import AddSalesMan from "./Pages/AddSalesMan/AddSalesMan";
+import Sold from "./Pages/Sold/Sold";
 
 const App = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -33,6 +34,7 @@ const App = () => {
             <Route path="/AddCode" element={<AddCode />} />
             <Route path="/AddAdmin" element={<AddAdmin />} />
             <Route path="/AddSalesMan" element={<AddSalesMan />} />
+            <Route path="/Sold" element={<Sold />} />
             
           </Routes>
         </div>
