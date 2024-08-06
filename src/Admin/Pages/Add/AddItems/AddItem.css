@@ -7,6 +7,66 @@
   background-color: var(--background);
   box-sizing: border-box;
 }
+.success-message {
+  margin-top: 20px;
+  padding: 10px;
+  color: var(--text-color);
+  background-color: var(--primary-light);
+  border: 1px solid var(--primary-dark);
+  border-radius: 5px;
+  text-align: center;
+}
+.add-item-container {
+  padding: 20px;
+}
+
+.add-item-header {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.add-item-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.add-item-row {
+  margin-bottom: 15px;
+}
+
+.add-item-row label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.dropdown {
+  width: 100%;
+  padding: 8px;
+}
+
+.quantity-input {
+  width: 100%;
+  padding: 8px;
+}
+
+.submit-button {
+  padding: 10px 15px;
+  background-color: var(--primary);
+  color: var(--text-color);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.success-message {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #4caf50; /* Green background for success */
+  color: #fff;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 16px;
+}
 
 .add-item-header {
   background-color: var(--primary);

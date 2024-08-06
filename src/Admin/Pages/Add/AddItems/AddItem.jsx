@@ -10,6 +10,7 @@ const AddItem = () => {
   const [colorOptions, setColorOptions] = useState([]);
   const [itemCodes, setItemCodes] = useState([]);
   const [hasColor, setHasColor] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const today = new Date();
@@ -138,10 +139,18 @@ const AddItem = () => {
       setItemCode('');
       setColorsAvailable([]);
       setHasColor(false);
-      alert("Stock added successfully!");
+      setSuccessMessage("Stock added successfully!");
+
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
+
     } catch (error) {
       console.error('Error adding or updating item:', error);
-      alert("Error adding or updating stock. Please try again.");
+      setSuccessMessage("Error adding or updating stock. Please try again.");
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
     }
   };
 
@@ -195,6 +204,7 @@ const AddItem = () => {
           </button>
         </div>
       </form>
+      {successMessage && <div className="success-message">{successMessage}</div>}
     </div>
   );
 };

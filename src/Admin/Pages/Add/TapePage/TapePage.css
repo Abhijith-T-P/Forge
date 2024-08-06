@@ -8,6 +8,21 @@
     background-color: var(--background);
     box-sizing: border-box;
   }
+  .feedback-message {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid var(--primary);
+    background-color: var(--primary-light);
+    color: var(--text-color);
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1.1em;
+    transition: opacity 0.5s ease-in-out;
+  }
+  
+  .feedback-message.fade-out {
+    opacity: 0;
+  }
   
   .tape-header {
     background-color: var(--primary);

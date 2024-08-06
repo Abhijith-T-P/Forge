@@ -1,3 +1,5 @@
+// TapePage.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import './TapePage.css';
 import { getDocs, collection, query, where, writeBatch, doc } from 'firebase/firestore';
@@ -9,6 +11,7 @@ const TapePage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [tapedQuantities, setTapedQuantities] = useState({});
   const [itemCodes, setItemCodes] = useState([]);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
 
   useEffect(() => {
     const today = new Date();
@@ -83,34 +86,35 @@ const TapePage = () => {
   const handleTapedQuantityChange = (color, quantity) => {
     setTapedQuantities(prev => ({ ...prev, [color]: quantity }));
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedItem) return;
-  
+
     try {
       // Create a batch instance
       const batch = writeBatch(db);
-  
+
       // Fetch all Cutting documents for the given item code
       const cuttingQuery = query(collection(db, "Cutting"), where("itemCode", "==", itemCode));
       const cuttingSnapshot = await getDocs(cuttingQuery);
-  
+
       if (!cuttingSnapshot.empty) {
         cuttingSnapshot.docs.forEach((doc) => {
           const cuttingRef = doc.ref;
           const itemData = doc.data();
           const currentStockByColor = itemData.stockByColor || {};
-  
+
           const updatedItemStockByColor = { ...currentStockByColor };
           Object.entries(tapedQuantities).forEach(([color, quantity]) => {
             const currentQuantity = parseInt(updatedItemStockByColor[color], 10) || 0;
             updatedItemStockByColor[color] = Math.max(currentQuantity - parseInt(quantity, 10), 0);
           });
-  
+
           // Update the Cutting document in the batch
           batch.update(cuttingRef, { stockByColor: updatedItemStockByColor });
         });
-  
+
         // Check if a Tapping document already exists for this itemCode and date
         const tappingQuery = query(
           collection(db, "Tapping"),
@@ -118,10 +122,10 @@ const TapePage = () => {
           where("date", "==", currentDate)
         );
         const tappingSnapshot = await getDocs(tappingQuery);
-  
+
         let tappingRef;
         let existingTapedQuantities = {};
-  
+
         if (!tappingSnapshot.empty) {
           // Update existing Tapping document
           tappingRef = tappingSnapshot.docs[0].ref;
@@ -130,38 +134,49 @@ const TapePage = () => {
           // Create new Tapping document
           tappingRef = doc(collection(db, "Tapping"));
         }
-  
+
         // Merge existing and new taped quantities
         const mergedTapedQuantities = { ...existingTapedQuantities };
         Object.entries(tapedQuantities).forEach(([color, quantity]) => {
           mergedTapedQuantities[color] = (parseInt(mergedTapedQuantities[color], 10) || 0) + parseInt(quantity, 10);
         });
-  
+
         // Prepare tapping data
         const tappingData = {
           date: currentDate,
           itemCode: itemCode,
           tapedQuantities: mergedTapedQuantities,
         };
-  
+
         // Set or update the Tapping document in the batch
         batch.set(tappingRef, tappingData, { merge: true });
-  
+
         // Commit the batch
         await batch.commit();
-  
+
         console.log('Stock updated in Cutting and Tapping');
         setItemCode('');
         setSelectedItem(null);
         setTapedQuantities({});
-        alert("Stock moved to tape and updated successfully!");
+        setFeedbackMessage("Stock moved to tape and updated successfully!");
+
+        // Fade out feedback message after 2 seconds
+        setTimeout(() => {
+          setFeedbackMessage('');
+        }, 2000);
       } else {
         console.error("No matching document found for update");
-        alert("Error updating stock. Document not found.");
+        setFeedbackMessage("Error updating stock. Document not found.");
+        setTimeout(() => {
+          setFeedbackMessage('');
+        }, 2000);
       }
     } catch (error) {
       console.error('Error processing data:', error);
-      alert("Error processing data. Please try again.");
+      setFeedbackMessage("Error processing data. Please try again.");
+      setTimeout(() => {
+        setFeedbackMessage('');
+      }, 2000);
     }
   };
 
@@ -217,6 +232,11 @@ const TapePage = () => {
           <button type="submit" className="submit-button">Taped</button>
         </div>
       </form>
+      {feedbackMessage && (
+        <div className={`feedback-message ${feedbackMessage ? '' : 'fade-out'}`}>
+          {feedbackMessage}
+        </div>
+      )}
     </div>
   );
 };
