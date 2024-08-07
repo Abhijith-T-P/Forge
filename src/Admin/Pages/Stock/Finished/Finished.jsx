@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getDocs, collection } from 'firebase/firestore';
+import { getDocs, collection, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 import './Finished.css';
 
@@ -18,7 +18,7 @@ const Finished = () => {
         querySnapshot.forEach((doc) => {
           const docData = doc.data();
           if (docData.itemCode && docData.finishedQuantities) {
-            data[docData.itemCode] = docData;
+            data[doc.id] = { ...docData };
           }
         });
         setItemsData(data);
@@ -47,8 +47,8 @@ const Finished = () => {
   }, []);
 
   const filteredItems = useMemo(() => {
-    return Object.entries(itemsData).filter(([itemCode]) =>
-      itemCode.toLowerCase().includes(searchTerm.toLowerCase())
+    return Object.entries(itemsData).filter(([itemCode, data]) =>
+      data.itemCode.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, itemsData]);
 
@@ -63,10 +63,27 @@ const Finished = () => {
         ...prevData[itemCode],
         finishedQuantities: {
           ...prevData[itemCode].finishedQuantities,
-          [color]: value,
+          [color]: parseInt(value, 10),
         },
       },
     }));
+  };
+
+  const saveChanges = async () => {
+    try {
+      await Promise.all(
+        Object.entries(itemsData).map(async ([docId, data]) => {
+          const itemRef = doc(db, 'Finished', docId);
+          await updateDoc(itemRef, {
+            finishedQuantities: data.finishedQuantities,
+          });
+        })
+      );
+      alert('Changes saved successfully!');
+      setEditMode(false);
+    } catch (error) {
+      console.error("Error saving changes:", error);
+    }
   };
 
   const getCellClass = (value) => {
@@ -86,8 +103,13 @@ const Finished = () => {
         className="search-bar"
       />
       <button onClick={handleEditClick}>
-        {editMode ? 'Save' : 'Edit'}
+        {editMode ? 'Cancel' : 'Edit'}
       </button>
+      {editMode && (
+        <button onClick={saveChanges} className="save-button">
+          Save All Changes
+        </button>
+      )}
       <table className="excel-table">
         <thead>
           <tr>
@@ -104,18 +126,18 @@ const Finished = () => {
             </tr>
           ) : (
             filteredItems.length > 0 ? (
-              filteredItems.map(([itemCode, data]) => (
-                <tr key={itemCode}>
-                  <td className="item-code">{itemCode}</td>
+              filteredItems.map(([docId, data]) => (
+                <tr key={docId}>
+                  <td className="item-code">{data.itemCode}</td>
                   {availableColors.map((color) => {
                     const quantity = data.finishedQuantities?.[color] || 0;
                     return (
-                      <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
+                      <td key={`${docId}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
                         {editMode ? (
                           <input
                             type="number"
                             value={quantity}
-                            onChange={(e) => handleQuantityChange(itemCode, color, e.target.value)}
+                            onChange={(e) => handleQuantityChange(docId, color, e.target.value)}
                             className="quantity-input"
                           />
                         ) : (

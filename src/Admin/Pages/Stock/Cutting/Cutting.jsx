@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getDocs, collection, updateDoc, doc } from 'firebase/firestore';
+import { getDocs, collection, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 import './Cutting.css';
 
@@ -17,7 +17,7 @@ const Cutting = () => {
         const data = {};
         querySnapshot.forEach((doc) => {
           const docData = doc.data();
-          data[docData.itemCode] = docData;
+          data[doc.id] = docData;
         });
         setItemsData(data);
         setLoading(false);
@@ -46,13 +46,9 @@ const Cutting = () => {
 
   const filteredItems = useMemo(() => {
     return Object.entries(itemsData).filter(([itemCode]) =>
-      itemCode.toLowerCase().includes(searchTerm.toLowerCase())
+      itemsData[itemCode].itemCode.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, itemsData]);
-
-  const handleEditClick = () => {
-    setEditMode((prev) => !prev);
-  };
 
   const handleQuantityChange = (itemCode, color, value) => {
     setItemsData((prevData) => ({
@@ -61,7 +57,7 @@ const Cutting = () => {
         ...prevData[itemCode],
         stockByColor: {
           ...prevData[itemCode].stockByColor,
-          [color]: value,
+          [color]: parseInt(value, 10),
         },
       },
     }));
@@ -70,16 +66,31 @@ const Cutting = () => {
   const saveChanges = async () => {
     try {
       await Promise.all(
-        Object.entries(itemsData).map(async ([itemCode, data]) => {
-          const itemRef = doc(db, 'Cutting', itemCode);
+        Object.entries(itemsData).map(async ([docId, data]) => {
+          const itemRef = doc(db, 'Cutting', docId);
           await updateDoc(itemRef, {
             stockByColor: data.stockByColor,
           });
         })
       );
       alert('Changes saved successfully!');
+      setEditMode(false);
     } catch (error) {
       console.error("Error saving changes:", error);
+    }
+  };
+
+  const deleteItem = async (itemCode) => {
+    try {
+      await deleteDoc(doc(db, 'Cutting', itemCode));
+      setItemsData((prevData) => {
+        const newData = { ...prevData };
+        delete newData[itemCode];
+        return newData;
+      });
+      alert('Item deleted successfully!');
+    } catch (error) {
+      console.error("Error deleting item:", error);
     }
   };
 
@@ -99,11 +110,11 @@ const Cutting = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="search-bar"
       />
-      <button onClick={handleEditClick}>
-        {editMode ? 'Save Changes' : 'Edit'}
+      <button onClick={() => setEditMode((prev) => !prev)}>
+        {editMode ? 'Cancel' : 'Edit'}
       </button>
       {editMode && (
-        <button onClick={saveChanges}>
+        <button onClick={saveChanges} className="save-button">
           Save All Changes
         </button>
       )}
@@ -114,27 +125,28 @@ const Cutting = () => {
             {availableColors.map(color => (
               <th key={color}>{color}</th>
             ))}
+            {editMode && <th>Delete</th>}
           </tr>
         </thead>
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={availableColors.length + 1} className="loading">Loading...</td>
+              <td colSpan={availableColors.length + 2} className="loading">Loading...</td>
             </tr>
           ) : (
             filteredItems.length > 0 ? (
-              filteredItems.map(([itemCode, data]) => (
-                <tr key={itemCode}>
-                  <td className="item-code">{itemCode}</td>
+              filteredItems.map(([docId, data]) => (
+                <tr key={docId}>
+                  <td className="item-code">{data.itemCode}</td>
                   {availableColors.map((color) => {
                     const quantity = data.stockByColor?.[color] || 0;
                     return (
-                      <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
+                      <td key={`${docId}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
                         {editMode ? (
                           <input
                             type="number"
                             value={quantity}
-                            onChange={(e) => handleQuantityChange(itemCode, color, e.target.value)}
+                            onChange={(e) => handleQuantityChange(docId, color, e.target.value)}
                             className="quantity-input"
                           />
                         ) : (
@@ -143,11 +155,18 @@ const Cutting = () => {
                       </td>
                     );
                   })}
+                  {editMode && (
+                    <td>
+                      <button onClick={() => deleteItem(docId)} className="delete-button">
+                        Delete
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={availableColors.length + 1} className="no-item-found">No items found</td>
+                <td colSpan={availableColors.length + 2} className="no-item-found">No items found</td>
               </tr>
             )
           )}

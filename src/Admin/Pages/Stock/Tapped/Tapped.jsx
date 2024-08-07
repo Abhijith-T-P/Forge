@@ -18,14 +18,14 @@ const Tapped = () => {
         querySnapshot.forEach((doc) => {
           const docData = doc.data();
           if (docData.itemCode && docData.tapedQuantities) {
-            if (!data[docData.itemCode]) {
-              data[docData.itemCode] = { tapedQuantities: {} };
+            if (!data[doc.id]) {
+              data[doc.id] = { ...docData, tapedQuantities: {} };
             }
             Object.entries(docData.tapedQuantities).forEach(([color, quantity]) => {
-              if (!data[docData.itemCode].tapedQuantities[color]) {
-                data[docData.itemCode].tapedQuantities[color] = 0;
+              if (!data[doc.id].tapedQuantities[color]) {
+                data[doc.id].tapedQuantities[color] = 0;
               }
-              data[docData.itemCode].tapedQuantities[color] += quantity;
+              data[doc.id].tapedQuantities[color] += quantity;
             });
           }
         });
@@ -55,14 +55,10 @@ const Tapped = () => {
   }, []);
 
   const filteredItems = useMemo(() => {
-    return Object.entries(itemsData).filter(([itemCode]) =>
-      itemCode.toLowerCase().includes(searchTerm.toLowerCase())
+    return Object.entries(itemsData).filter(([docId, data]) =>
+      data.itemCode.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, itemsData]);
-
-  const handleEditClick = () => {
-    setEditMode((prev) => !prev);
-  };
 
   const handleQuantityChange = (itemCode, color, value) => {
     setItemsData((prevData) => ({
@@ -71,7 +67,7 @@ const Tapped = () => {
         ...prevData[itemCode],
         tapedQuantities: {
           ...prevData[itemCode].tapedQuantities,
-          [color]: value,
+          [color]: parseInt(value, 10),
         },
       },
     }));
@@ -80,14 +76,15 @@ const Tapped = () => {
   const saveChanges = async () => {
     try {
       await Promise.all(
-        Object.entries(itemsData).map(async ([itemCode, data]) => {
-          const itemRef = doc(db, 'Tapping', itemCode);
+        Object.entries(itemsData).map(async ([docId, data]) => {
+          const itemRef = doc(db, 'Tapping', docId);
           await updateDoc(itemRef, {
             tapedQuantities: data.tapedQuantities,
           });
         })
       );
       alert('Changes saved successfully!');
+      setEditMode(false);
     } catch (error) {
       console.error("Error saving changes:", error);
     }
@@ -109,11 +106,11 @@ const Tapped = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="search-bar"
       />
-      <button onClick={handleEditClick}>
-        {editMode ? 'Save Changes' : 'Edit'}
+      <button onClick={() => setEditMode((prev) => !prev)}>
+        {editMode ? 'Cancel' : 'Edit'}
       </button>
       {editMode && (
-        <button onClick={saveChanges}>
+        <button onClick={saveChanges} className="save-button">
           Save All Changes
         </button>
       )}
@@ -133,18 +130,18 @@ const Tapped = () => {
             </tr>
           ) : (
             filteredItems.length > 0 ? (
-              filteredItems.map(([itemCode, data]) => (
-                <tr key={itemCode}>
-                  <td className="item-code">{itemCode}</td>
+              filteredItems.map(([docId, data]) => (
+                <tr key={docId}>
+                  <td className="item-code">{data.itemCode}</td>
                   {availableColors.map((color) => {
                     const quantity = data.tapedQuantities[color] || 0;
                     return (
-                      <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
+                      <td key={`${docId}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
                         {editMode ? (
                           <input
                             type="number"
                             value={quantity}
-                            onChange={(e) => handleQuantityChange(itemCode, color, e.target.value)}
+                            onChange={(e) => handleQuantityChange(docId, color, e.target.value)}
                             className="quantity-input"
                           />
                         ) : (

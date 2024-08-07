@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './AddItem.css';
 import { addDoc, collection, getDocs, updateDoc, query, where } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
@@ -9,64 +9,58 @@ const AddItem = () => {
   const [colorsAvailable, setColorsAvailable] = useState([]);
   const [colorOptions, setColorOptions] = useState([]);
   const [itemCodes, setItemCodes] = useState([]);
-  const [hasColor, setHasColor] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    const today = new Date();
-    setCurrentDate(today.toISOString().split('T')[0]);
-
-    const fetchColors = async () => {
-      try {
-        const colorSnapshot = await getDocs(collection(db, 'colors'));
-        const colorsData = colorSnapshot.docs.map(doc => doc.data().color);
-        setColorOptions(colorsData);
-      } catch (error) {
-        console.error("Error fetching colors:", error);
-      }
-    };
-
-    const fetchItemCodes = async () => {
-      try {
-        const cuttingSnapshot = await getDocs(collection(db, 'itemCodes'));
-        const codes = cuttingSnapshot.docs.map(doc => doc.data().code);
-    
-        const customSort = (a, b) => {
-          const isNumericA = /^[0-9]+$/.test(a);
-          const isNumericB = /^[0-9]+$/.test(b);
-          const isAlphaA = /^[a-zA-Z]+$/.test(a);
-          const isAlphaB = /^[a-zA-Z]+$/.test(b);
-    
-          if (isNumericA && isNumericB) {
-            return a.localeCompare(b, undefined, { numeric: true });
-          }
-          if (isNumericA) return -1;
-          if (isNumericB) return 1;
-          if (isAlphaA && isAlphaB) return a.localeCompare(b);
-          if (isAlphaA) return 1;
-          if (isAlphaB) return -1;
-          return a.localeCompare(b);
-        };
-    
-        const sortedCodes = codes.sort(customSort);
-        setItemCodes(sortedCodes);
-      } catch (error) {
-        console.error("Error fetching item codes:", error);
-      }
-    };
-
+    setCurrentDate(new Date().toISOString().split('T')[0]);
     fetchColors();
     fetchItemCodes();
   }, []);
 
-  const handleColorQuantityChange = (colorName, quantity) => {
+  const fetchColors = async () => {
+    try {
+      const colorSnapshot = await getDocs(collection(db, 'colors'));
+      const colorsData = colorSnapshot.docs.map(doc => doc.data().color);
+      setColorOptions(colorsData);
+    } catch (error) {
+      console.error("Error fetching colors:", error);
+    }
+  };
+
+  const fetchItemCodes = async () => {
+    try {
+      const cuttingSnapshot = await getDocs(collection(db, 'itemCodes'));
+      const codes = cuttingSnapshot.docs.map(doc => doc.data().code);
+      setItemCodes(sortCodes(codes));
+    } catch (error) {
+      console.error("Error fetching item codes:", error);
+    }
+  };
+
+  const sortCodes = useCallback((codes) => {
+    return codes.sort((a, b) => {
+      const isNumericA = /^[0-9]+$/.test(a);
+      const isNumericB = /^[0-9]+$/.test(b);
+      const isAlphaA = /^[a-zA-Z]+$/.test(a);
+      const isAlphaB = /^[a-zA-Z]+$/.test(b);
+
+      if (isNumericA && isNumericB) return a.localeCompare(b, undefined, { numeric: true });
+      if (isNumericA) return -1;
+      if (isNumericB) return 1;
+      if (isAlphaA && isAlphaB) return a.localeCompare(b);
+      if (isAlphaA) return 1;
+      if (isAlphaB) return -1;
+      return a.localeCompare(b);
+    });
+  }, []);
+
+  const handleColorQuantityChange = useCallback((colorName, quantity) => {
     setColorsAvailable(prevColors =>
       prevColors.map(color =>
         color.colorName === colorName ? { ...color, quantity: parseInt(quantity, 10) || '' } : color
       )
     );
-    setHasColor(colorsAvailable.some(color => color.quantity > 0));
-  };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -76,7 +70,7 @@ const AddItem = () => {
       return;
     }
 
-    if (!hasColor) {
+    if (!colorsAvailable.some(color => color.quantity > 0)) {
       alert("Please add at least one color with quantity.");
       return;
     }
@@ -84,7 +78,7 @@ const AddItem = () => {
     const newItem = {
       date: currentDate,
       itemCode,
-      inStock: colorsAvailable.some(color => color.quantity > 0),
+      inStock: true,
       stockByColor: colorsAvailable.reduce((acc, color) => {
         if (color.quantity > 0) {
           acc[color.colorName] = color.quantity;
@@ -94,64 +88,69 @@ const AddItem = () => {
     };
 
     try {
-      const cuttingQuery = query(collection(db, 'Cutting'), where('itemCode', '==', itemCode));
-      const cuttingSnapshot = await getDocs(cuttingQuery);
+      await updateOrAddCuttingItem(newItem);
+      await updateWorkItems(itemCode, colorsAvailable);
 
-      if (!cuttingSnapshot.empty) {
-        const existingDoc = cuttingSnapshot.docs[0];
-        const existingItem = existingDoc.data();
-        const updatedStockByColor = { ...existingItem.stockByColor };
-
-        colorsAvailable.forEach(color => {
-          if (updatedStockByColor[color.colorName]) {
-            updatedStockByColor[color.colorName] = parseInt(updatedStockByColor[color.colorName], 10) + color.quantity;
-          } else {
-            updatedStockByColor[color.colorName] = color.quantity;
-          }
-        });
-
-        await updateDoc(existingDoc.ref, {
-          'stockByColor': updatedStockByColor,
-          'date': currentDate,
-          'inStock': Object.values(updatedStockByColor).some(qty => qty > 0)
-        });
-
-        console.log('Existing item updated in Cutting:', itemCode);
-      } else {
-        await addDoc(collection(db, "Cutting"), newItem);
-        console.log('New item added to Cutting:', newItem);
-      }
-
-      const workQuery = query(collection(db, 'Work'), where('newItem.itemCode', '==', itemCode));
-      const workSnapshot = await getDocs(workQuery);
-      
-      workSnapshot.forEach(async (doc) => {
-        const workItem = doc.data().newItem;
-        const updatedStockByColor = { ...workItem.stockByColor };
-        colorsAvailable.forEach(color => {
-          if (updatedStockByColor[color.colorName] >= color.quantity) {
-            updatedStockByColor[color.colorName] = parseInt(updatedStockByColor[color.colorName], 10) - color.quantity;
-          }
-        });
-        await updateDoc(doc.ref, { 'newItem.stockByColor': updatedStockByColor });
-      });
-
-      setItemCode('');
-      setColorsAvailable([]);
-      setHasColor(false);
-      setSuccessMessage("Stock added successfully!");
-
-      setTimeout(() => {
-        setSuccessMessage('');
-      }, 3000);
-
+      resetForm();
+      showSuccessMessage("Stock added successfully!");
     } catch (error) {
       console.error('Error adding or updating item:', error);
-      setSuccessMessage("Error adding or updating stock. Please try again.");
-      setTimeout(() => {
-        setSuccessMessage('');
-      }, 3000);
+      showSuccessMessage("Error adding or updating stock. Please try again.");
     }
+  };
+
+  const updateOrAddCuttingItem = async (newItem) => {
+    const cuttingQuery = query(collection(db, 'Cutting'), where('itemCode', '==', newItem.itemCode));
+    const cuttingSnapshot = await getDocs(cuttingQuery);
+
+    if (!cuttingSnapshot.empty) {
+      const existingDoc = cuttingSnapshot.docs[0];
+      const existingItem = existingDoc.data();
+      const updatedStockByColor = { ...existingItem.stockByColor };
+
+      Object.entries(newItem.stockByColor).forEach(([color, quantity]) => {
+        updatedStockByColor[color] = (updatedStockByColor[color] || 0) + quantity;
+      });
+
+      await updateDoc(existingDoc.ref, {
+        'stockByColor': updatedStockByColor,
+        'date': newItem.date,
+        'inStock': true
+      });
+
+      console.log('Existing item updated in Cutting:', newItem.itemCode);
+    } else {
+      await addDoc(collection(db, "Cutting"), newItem);
+      console.log('New item added to Cutting:', newItem);
+    }
+  };
+
+  const updateWorkItems = async (itemCode, colorsAvailable) => {
+    const workQuery = query(collection(db, 'Work'), where('newItem.itemCode', '==', itemCode));
+    const workSnapshot = await getDocs(workQuery);
+    
+    const updatePromises = workSnapshot.docs.map(async (doc) => {
+      const workItem = doc.data().newItem;
+      const updatedStockByColor = { ...workItem.stockByColor };
+      colorsAvailable.forEach(color => {
+        if (updatedStockByColor[color.colorName] >= color.quantity) {
+          updatedStockByColor[color.colorName] = parseInt(updatedStockByColor[color.colorName], 10) - color.quantity;
+        }
+      });
+      return updateDoc(doc.ref, { 'newItem.stockByColor': updatedStockByColor });
+    });
+
+    await Promise.all(updatePromises);
+  };
+
+  const resetForm = () => {
+    setItemCode('');
+    setColorsAvailable([]);
+  };
+
+  const showSuccessMessage = (message) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(''), 3000);
   };
 
   return (
@@ -199,7 +198,7 @@ const AddItem = () => {
           </div>
         ))}
         <div className="add-item-row">
-          <button type="submit" className="submit-button" disabled={!hasColor}>
+          <button type="submit" className="submit-button" disabled={!colorsAvailable.some(color => color.quantity > 0)}>
             Add Stock
           </button>
         </div>
