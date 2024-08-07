@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { getDocs, collection, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import './Dashboard.css';
@@ -18,11 +18,8 @@ const Dashboard = () => {
 
         // Fetch available colors
         const colorsSnapshot = await getDocs(collection(db, 'colors'));
-        const colors = [];
-        colorsSnapshot.forEach(doc => {
-          colors.push(doc.data().color);
-        });
-        console.log("Fetched colors:", colors);
+        const fetchedColors = colorsSnapshot.docs.map(doc => doc.data().color);
+        console.log("Fetched colors:", fetchedColors);
 
         // Initialize items data
         for (const collectionName of collections) {
@@ -34,10 +31,10 @@ const Dashboard = () => {
             if (docData.itemCode) {
               if (!data[docData.itemCode]) {
                 data[docData.itemCode] = {
-                  colors: colors,
-                  finished: Array(colors.length).fill(0),
-                  cuttingQuantities: Array(colors.length).fill(0),
-                  tapingQuantities: Array(colors.length).fill(0),
+                  colors: fetchedColors,
+                  finished: Array(fetchedColors.length).fill(0),
+                  cuttingQuantities: Array(fetchedColors.length).fill(0),
+                  tapingQuantities: Array(fetchedColors.length).fill(0),
                 };
               }
 
@@ -51,7 +48,7 @@ const Dashboard = () => {
               } else if (collectionName === 'HoldItem') {
                 quantityField = 'quantity';
                 holdData[docData.itemCode] = {};
-                colors.forEach(color => {
+                fetchedColors.forEach(color => {
                   holdData[docData.itemCode][color] = docData.quantity?.[color] || 0;
                 });
               }
@@ -99,19 +96,13 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    console.log("Updated itemsData:", itemsData);
-    console.log("Updated holdItems:", holdItems);
-  }, [itemsData, holdItems]);
-
   const filteredItems = useMemo(() => {
     return Object.entries(itemsData).filter(([itemCode]) =>
       itemCode.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, itemsData]);
 
-  const handleHoldChange = (itemCode, color) => async (e) => {
-    const newHoldValue = e.target.value;
+  const handleHoldChange = useCallback(async (itemCode, color, newHoldValue) => {
     if (/^\d*$/.test(newHoldValue)) {
       const parsedValue = parseInt(newHoldValue, 10) || 0;
       setHoldItems((prevHoldItems) => ({
@@ -144,16 +135,25 @@ const Dashboard = () => {
         console.error("Error updating Firestore:", error);
       }
     }
-  };
+  }, []);
 
-  const getCellClass = (value) => {
+  const getCellClass = useCallback((value) => {
     if (value === 0) return 'quantity-zero';
     if (value > 0 && value < 5) return 'quantity-low';
     if (value >= 5 && value < 10) return 'quantity-medium';
     return 'quantity-high';
-  };
+  }, []);
 
-  const renderTable = (item, itemCode) => {
+  const hasNonZeroValues = useCallback((item) => {
+    return item.cuttingQuantities.some(q => q > 0) ||
+           item.tapingQuantities.some(q => q > 0) ||
+           item.finished.some(q => q > 0) ||
+           Object.values(holdItems[item.itemCode] || {}).some(q => q > 0);
+  }, [holdItems]);
+
+  const renderTable = useCallback((item, itemCode) => {
+    if (!hasNonZeroValues(item)) return null;
+
     return (
       <div key={itemCode} className="item-table-container">
         <table className="excel-table">
@@ -189,7 +189,7 @@ const Dashboard = () => {
                   <input
                     type="text"
                     value={holdItems[itemCode]?.[color] || ''}
-                    onChange={handleHoldChange(itemCode, color)}
+                    onChange={(e) => handleHoldChange(itemCode, color, e.target.value)}
                     className="hold-input"
                     pattern="\d*"
                   />
@@ -200,7 +200,7 @@ const Dashboard = () => {
         </table>
       </div>
     );
-  };
+  }, [getCellClass, hasNonZeroValues, handleHoldChange, holdItems]);
 
   return (
     <div className="dashboard">
@@ -219,7 +219,7 @@ const Dashboard = () => {
           <p className="loading">Loading...</p>
         ) : (
           filteredItems.length > 0 ? (
-            filteredItems.map(([itemCode, item]) => renderTable(item, itemCode))
+            filteredItems.map(([itemCode, item]) => renderTable({...item, itemCode}, itemCode)).filter(Boolean)
           ) : (
             <p className="no-item-found">No items found</p>
           )
