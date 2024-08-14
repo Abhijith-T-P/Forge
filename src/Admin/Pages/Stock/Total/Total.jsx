@@ -3,13 +3,16 @@ import { getDocs, collection } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import './Total.css'; // Ensure this file exists and is correctly named
+import './Total.css';
 
 const Total = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsData, setItemsData] = useState({});
+  const [itemCodes, setItemCodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [availableColors, setAvailableColors] = useState([]);
+  const [showInStock, setShowInStock] = useState(false);
+  const [showOutOfStock, setShowOutOfStock] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,17 +28,43 @@ const Total = () => {
         });
         setAvailableColors(colors);
 
+        // Fetch item codes
+        const itemCodesSnapshot = await getDocs(collection(db, 'itemCodes'));
+        const codes = [];
+        itemCodesSnapshot.forEach(doc => {
+          codes.push(doc.data().code);
+        });
+
+        // Sort item codes
+        codes.sort((a, b) => {
+          const aIsNum = /^\d+$/.test(a);
+          const bIsNum = /^\d+$/.test(b);
+          const aHasNum = /\d/.test(a);
+          const bHasNum = /\d/.test(b);
+
+          if (aIsNum && bIsNum) return parseInt(a) - parseInt(b);
+          if (aIsNum) return -1;
+          if (bIsNum) return 1;
+          if (aHasNum && bHasNum) return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+          if (aHasNum) return -1;
+          if (bHasNum) return 1;
+          return a.localeCompare(b);
+        });
+
+        setItemCodes(codes);
+
+        // Initialize data object with all item codes and colors
+        codes.forEach(code => {
+          data[code] = {};
+          colors.forEach(color => data[code][color] = 0);
+        });
+
         // Fetch and aggregate data
         for (const collectionName of collections) {
           const querySnapshot = await getDocs(collection(db, collectionName));
           querySnapshot.forEach(doc => {
             const docData = doc.data();
-            if (docData.itemCode) {
-              if (!data[docData.itemCode]) {
-                data[docData.itemCode] = {};
-                colors.forEach(color => data[docData.itemCode][color] = 0);
-              }
-              
+            if (docData.itemCode && data[docData.itemCode]) {
               let quantityField;
               if (collectionName === 'Cutting') {
                 quantityField = 'stockByColor';
@@ -68,10 +97,23 @@ const Total = () => {
   }, []);
 
   const filteredItems = useMemo(() => {
-    return Object.entries(itemsData).filter(([itemCode]) =>
-      itemCode.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, itemsData]);
+    return itemCodes.filter(itemCode => {
+      const itemData = itemsData[itemCode];
+      if (!itemData) return false; // Skip this item if it doesn't exist in itemsData
+
+      const matchesSearch = itemCode.toLowerCase().includes(searchTerm.toLowerCase());
+      const isInStock = Object.values(itemData).some(quantity => quantity > 0);
+      const isOutOfStock = Object.values(itemData).every(quantity => quantity === 0);
+
+      if (showInStock && !showOutOfStock) {
+        return matchesSearch && isInStock;
+      } else if (showOutOfStock && !showInStock) {
+        return matchesSearch && isOutOfStock;
+      } else {
+        return matchesSearch;
+      }
+    });
+  }, [searchTerm, itemCodes, itemsData, showInStock, showOutOfStock]);
 
   const getCellClass = (value) => {
     if (value === 0) return "quantity-zero";
@@ -103,6 +145,20 @@ const Total = () => {
     });
   };
 
+  const toggleInStock = () => {
+    setShowInStock(!showInStock);
+    setShowOutOfStock(false);
+  };
+
+  const toggleOutOfStock = () => {
+    setShowOutOfStock(!showOutOfStock);
+    setShowInStock(false);
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="total-list">
       <input
@@ -115,6 +171,18 @@ const Total = () => {
       <button onClick={handleExportPDF} className="export-button">
         Export as PDF
       </button>
+      <button 
+        onClick={toggleInStock} 
+        className={`filter-button ${showInStock ? 'active' : ''}`}
+      >
+        In-Stock
+      </button>
+      <button 
+        onClick={toggleOutOfStock} 
+        className={`filter-button ${showOutOfStock ? 'active' : ''}`}
+      >
+        Out of Stock
+      </button>
       <table id="table-to-export" className="excel-table">
         <thead>
           <tr>
@@ -125,32 +193,26 @@ const Total = () => {
           </tr>
         </thead>
         <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan={availableColors.length + 1} className="loading">Loading...</td>
-            </tr>
-          ) : (
-            filteredItems.length > 0 ? (
-              filteredItems.map(([itemCode, data]) => (
-                <tr key={itemCode}>
-                  <td className="item-code">{itemCode}</td>
-                  {availableColors.map(color => {
-                    const total = data[color] || 0;
-                    return (
-                      <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(total)}`}>
-                        {total}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={availableColors.length + 1} className="no-item-found">
-                  No items found
-                </td>
+          {filteredItems.length > 0 ? (
+            filteredItems.map(itemCode => (
+              <tr key={itemCode}>
+                <td className="item-code">{itemCode}</td>
+                {availableColors.map(color => {
+                  const total = itemsData[itemCode] && itemsData[itemCode][color] ? itemsData[itemCode][color] : 0;
+                  return (
+                    <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(total)}`}>
+                      {total}
+                    </td>
+                  );
+                })}
               </tr>
-            )
+            ))
+          ) : (
+            <tr>
+              <td colSpan={availableColors.length + 1} className="no-item-found">
+                No items found
+              </td>
+            </tr>
           )}
         </tbody>
       </table>
