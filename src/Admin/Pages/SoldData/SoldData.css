@@ -103,7 +103,14 @@
   .export-pdf-button:hover {
     background-color: #45a049;
   }
-    
+    /* SoldData.css */
+.quantity-input {
+  width: 100%;
+  border: none;
+  background: #f9f9f9;
+  text-align: center;
+}
+
   
   @media (max-width: 768px) {
     .sold-data-container {

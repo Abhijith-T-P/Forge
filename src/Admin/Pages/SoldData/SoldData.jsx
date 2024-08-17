@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -13,6 +13,7 @@ const SoldData = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     const fetchSoldData = async () => {
@@ -53,34 +54,59 @@ const SoldData = () => {
     if (quantity < 10) return 'low';
     return '';
   };
+
+  const handleQuantityChange = (itemCode, color, event) => {
+    const newValue = parseInt(event.target.value, 10);
+    if (newValue > 0) {
+      setSoldItems(prevItems => ({
+        ...prevItems,
+        [itemCode]: {
+          ...prevItems[itemCode],
+          [color]: newValue
+        }
+      }));
+    }
+  };
+
+  const saveChanges = async () => {
+    try {
+      for (const [itemCode, data] of Object.entries(soldItems)) {
+        const itemRef = doc(db, 'Sold', itemCode);
+        await updateDoc(itemRef, { soldQuantities: data });
+      }
+      setEditing(false);
+    } catch (err) {
+      console.error("Error updating sold data:", err);
+      setError("Failed to update sold data. Please try again later.");
+    }
+  };
+
   const exportToPDF = async () => {
     const input = document.getElementById('sold-data-table');
     if (input) {
       const canvas = await html2canvas(input, { scrollX: 0, scrollY: -window.scrollY });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-  
-      // Calculate the number of pages needed
+
       const imgWidth = 210; // A4 width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       const pageHeight = 295; // A4 height in mm
       let heightLeft = imgHeight;
       let position = 0;
-  
+
       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
-  
+
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
-  
+
       pdf.save('sold_data_summary.pdf');
     }
   };
-  
 
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(
@@ -116,6 +142,11 @@ const SoldData = () => {
       <div className="export-buttons">
         <button onClick={exportToPDF} className="export-pdf-button">Export as PDF</button>
         <button onClick={exportToExcel} className="export-excel-button">Export as Excel</button>
+        {editing ? (
+          <button onClick={saveChanges} className="save-changes-button">Save Changes</button>
+        ) : (
+          <button onClick={() => setEditing(true)} className="edit-button">Edit</button>
+        )}
       </div>
       <div className="sold-data-link-container">
         <Link to="../Sold" className="sold-data-button">Back</Link>
@@ -143,7 +174,17 @@ const SoldData = () => {
                     const quantity = data[color] || 0;
                     return (
                       <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
-                        {quantity}
+                        {editing ? (
+                          <input
+                            type="number"
+                            value={quantity}
+                            min="1"
+                            onChange={(e) => handleQuantityChange(itemCode, color, e)}
+                            className="quantity-input"
+                          />
+                        ) : (
+                          quantity
+                        )}
                       </td>
                     );
                   })}
