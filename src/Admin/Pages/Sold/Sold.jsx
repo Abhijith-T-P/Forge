@@ -69,7 +69,9 @@ const Sold = () => {
     e.preventDefault();
     try {
       const batch = writeBatch(db);
-
+  
+      const currentDate = new Date().toISOString(); // Get the current date in ISO format
+  
       for (const [itemCode, colors] of Object.entries(inputValues)) {
         for (const [color, inputValue] of Object.entries(colors)) {
           const quantityToSubtract = parseInt(inputValue, 10);
@@ -78,38 +80,39 @@ const Sold = () => {
             const finishedDoc = finishedSnapshot.docs.find(doc =>
               doc.data().itemCode === itemCode && doc.data().finishedQuantities?.[color]
             );
-
+  
             if (!finishedDoc) {
               throw new Error(`No finished quantity found for ${itemCode} in color ${color}.`);
             }
-
+  
             const currentQuantity = finishedDoc.data().finishedQuantities[color];
-
+  
             if (currentQuantity < quantityToSubtract) {
               throw new Error(`Not enough quantity for ${itemCode} in color ${color}. Available: ${currentQuantity}, Requested: ${quantityToSubtract}`);
             }
-
+  
             // Update Finished collection
             const newQuantity = currentQuantity - quantityToSubtract;
             batch.update(doc(db, 'Finished', finishedDoc.id), { [`finishedQuantities.${color}`]: newQuantity });
-
+  
             // Update Sold collection
             const soldDocRef = doc(db, 'Sold', finishedDoc.id);
             const soldSnapshot = await getDocs(collection(db, 'Sold'));
             const soldDoc = soldSnapshot.docs.find(doc => doc.data().itemCode === itemCode);
-
+  
             const updatedSoldQuantities = soldDoc
               ? { ...soldDoc.data().soldQuantities, [color]: (soldDoc.data().soldQuantities[color] || 0) + quantityToSubtract }
               : { [color]: quantityToSubtract };
-
+  
             batch.set(soldDocRef, {
               itemCode: itemCode,
-              soldQuantities: updatedSoldQuantities
+              soldQuantities: updatedSoldQuantities,
+              date: currentDate // Add the current date
             }, { merge: true });
           }
         }
       }
-
+  
       await batch.commit();
       alert('Quantities updated successfully');
       setInputValues({});
@@ -119,7 +122,7 @@ const Sold = () => {
       alert(`Failed to update quantities: ${error.message}`);
     }
   };
-
+  
   const handleKeyDown = (e, itemCode, color) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
