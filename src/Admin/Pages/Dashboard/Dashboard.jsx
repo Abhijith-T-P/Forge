@@ -19,18 +19,16 @@ const Dashboard = () => {
         // Fetch available colors
         const colorsSnapshot = await getDocs(collection(db, 'colors'));
         const fetchedColors = colorsSnapshot.docs.map(doc => doc.data().color);
-        console.log("Fetched colors:", fetchedColors);
 
         // Fetch all item codes
         const itemCodesSnapshot = await getDocs(collection(db, 'itemCodes'));
         const allItemCodes = itemCodesSnapshot.docs.map(doc => doc.data().code);
-        console.log("Fetched item codes:", allItemCodes);
 
         // Initialize items data with all item codes
         allItemCodes.forEach(itemCode => {
           data[itemCode] = {
             colors: fetchedColors,
-            finished: Array(fetchedColors.length).fill(0),
+            finishedQuantities: Array(fetchedColors.length).fill(0),
             cuttingQuantities: Array(fetchedColors.length).fill(0),
             tapingQuantities: Array(fetchedColors.length).fill(0),
           };
@@ -42,11 +40,9 @@ const Dashboard = () => {
 
         // Fetch data from other collections
         for (const collectionName of collections) {
-          console.log(`Fetching data from ${collectionName} collection`);
           const querySnapshot = await getDocs(collection(db, collectionName));
           querySnapshot.forEach(doc => {
             const docData = doc.data();
-            console.log(`Document data for ${collectionName}:`, docData);
             if (docData.itemCode) {
               let quantityField;
               if (collectionName === 'Cutting') {
@@ -73,25 +69,18 @@ const Dashboard = () => {
                         if (collectionName === 'Cutting') {
                           data[docData.itemCode].cuttingQuantities[colorIndex] = parsedQuantity;
                         } else if (collectionName === 'Finished') {
-                          data[docData.itemCode].finished[colorIndex] = parsedQuantity;
+                          data[docData.itemCode].finishedQuantities[colorIndex] = parsedQuantity;
                         } else if (collectionName === 'Tapping') {
                           data[docData.itemCode].tapingQuantities[colorIndex] = parsedQuantity;
                         }
-                      } else {
-                        console.warn(`Invalid quantity for ${collectionName}, itemCode: ${docData.itemCode}, color: ${color}`);
                       }
                     }
                   });
-                } else {
-                  console.warn(`Unexpected data structure for ${collectionName}, itemCode: ${docData.itemCode}`);
                 }
               }
             }
           });
         }
-
-        console.log("Final data structure:", data);
-        console.log("Hold data:", holdData);
 
         setItemsData(data);
         setHoldItems(holdData);
@@ -127,19 +116,17 @@ const Dashboard = () => {
         const holdItemDoc = await getDoc(holdItemRef);
 
         if (holdItemDoc.exists()) {
-          await updateDoc(holdItemRef, { 
+          await updateDoc(holdItemRef, {
             [`quantity.${color}`]: parsedValue,
-            lastUpdated: new Date()
+            lastUpdated: new Date(),
           });
         } else {
-          await setDoc(holdItemRef, { 
+          await setDoc(holdItemRef, {
             itemCode: itemCode,
             quantity: { [color]: parsedValue },
-            lastUpdated: new Date()
+            lastUpdated: new Date(),
           });
         }
-
-        console.log(`Hold value updated for item code ${itemCode}, color ${color}`);
       } catch (error) {
         console.error("Error updating Firestore:", error);
       }
@@ -154,6 +141,9 @@ const Dashboard = () => {
   }, []);
 
   const renderTable = useCallback((item, itemCode) => {
+    if (!item.colors || !item.cuttingQuantities || !item.tapingQuantities || !item.finishedQuantities) {
+      return null;
+    }
     return (
       <div key={itemCode} className="item-table-container">
         <table className="excel-table">
@@ -182,8 +172,8 @@ const Dashboard = () => {
                 <td className={`quantity ${getCellClass(item.tapingQuantities[index])}`}>
                   {item.tapingQuantities[index]}
                 </td>
-                <td className={`quantity ${getCellClass(item.finished[index])}`}>
-                  {item.finished[index]}
+                <td className={`quantity ${getCellClass(item.finishedQuantities[index])}`}>
+                  {item.finishedQuantities[index]}
                 </td>
                 <td className="quantity">
                   <input
@@ -219,7 +209,7 @@ const Dashboard = () => {
           <p className="loading">Loading...</p>
         ) : (
           filteredItems.length > 0 ? (
-            filteredItems.map(([itemCode, item]) => renderTable({...item, itemCode}, itemCode))
+            filteredItems.map(([itemCode, item]) => renderTable(item, itemCode))
           ) : (
             <p className="no-item-found">No items found</p>
           )
