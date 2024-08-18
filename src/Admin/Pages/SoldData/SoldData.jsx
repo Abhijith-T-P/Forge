@@ -57,7 +57,7 @@ const SoldData = () => {
 
   const handleQuantityChange = (itemCode, color, event) => {
     const newValue = parseInt(event.target.value, 10);
-    if (newValue > 0) {
+    if (newValue >= 0) {
       setSoldItems(prevItems => ({
         ...prevItems,
         [itemCode]: {
@@ -178,7 +178,7 @@ const SoldData = () => {
                           <input
                             type="number"
                             value={quantity}
-                            min="1"
+                            min="0"
                             onChange={(e) => handleQuantityChange(itemCode, color, e)}
                             className="quantity-input"
                           />
@@ -203,3 +203,4 @@ const SoldData = () => {
 };
 
 export default SoldData;
+
