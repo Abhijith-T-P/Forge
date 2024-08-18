@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDocs, collection, setDoc, doc } from 'firebase/firestore';
+import { getDocs, collection, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 import './Finished.css';
 
@@ -9,6 +9,7 @@ const Finished = () => {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [originalData, setOriginalData] = useState({}); // To store the original data
 
   useEffect(() => {
     const fetchData = async () => {
@@ -16,6 +17,7 @@ const Finished = () => {
         const finishedSnapshot = await getDocs(collection(db, 'Finished'));
         const data = [];
         const allColors = new Set();
+        const originalDataMap = {}; // To store original data for comparison
 
         finishedSnapshot.forEach((doc) => {
           const docData = doc.data();
@@ -25,12 +27,13 @@ const Finished = () => {
               quantities: docData.finishedQuantities,
             });
             Object.keys(docData.finishedQuantities).forEach(color => allColors.add(color));
+            originalDataMap[docData.itemCode] = docData.finishedQuantities; // Save original data
           }
         });
 
-        console.log('Fetched data:', data);
         setItemsData(data);
         setAvailableColors([...allColors]);
+        setOriginalData(originalDataMap); // Set original data state
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -44,14 +47,14 @@ const Finished = () => {
   const handleEditClick = () => setEditMode(prev => !prev);
 
   const handleQuantityChange = (itemCode, color, value) => {
-    const numValue = value === '' ? 0 : Math.max(0, parseInt(value, 10));
-    
+    const numValue = value === '' ? '' : Math.max(0, parseInt(value, 10));
+
     setItemsData(prevData => {
       return prevData.map(item => {
         if (item.itemCode === itemCode) {
-          // Ensure existing quantities object is updated without altering other colors
+          // Update only the changed color's quantity
           const updatedQuantities = { ...item.quantities, [color]: numValue };
-  
+
           return {
             ...item,
             quantities: updatedQuantities
@@ -61,17 +64,35 @@ const Finished = () => {
       });
     });
   };
-  
 
   const saveChanges = async () => {
     try {
       await Promise.all(
         itemsData.map(async ({ itemCode, quantities }) => {
           const itemRef = doc(db, 'Finished', itemCode);
-          console.log(`Saving ${itemCode}:`, quantities);
-          await setDoc(itemRef, { itemCode, finishedQuantities: quantities }, { merge: true });
+
+          // Fetch existing data from Firestore
+          const itemSnapshot = await getDoc(itemRef);
+          const existingData = itemSnapshot.data();
+          const existingQuantities = existingData?.finishedQuantities || {};
+
+          // Create an update object with unchanged fields preserved
+          const updatedQuantities = { ...existingQuantities };
+
+          // Update only fields where the value has changed
+          Object.keys(quantities).forEach(color => {
+            if (quantities[color] !== originalData[itemCode]?.[color]) {
+              updatedQuantities[color] = quantities[color];
+            }
+          });
+
+          // Perform the update only if there are changes
+          if (Object.keys(updatedQuantities).length > 0) {
+            await updateDoc(itemRef, { finishedQuantities: updatedQuantities });
+          }
         })
       );
+
       alert('Changes saved successfully!');
       setEditMode(false);
     } catch (error) {

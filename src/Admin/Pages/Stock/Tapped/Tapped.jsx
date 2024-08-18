@@ -6,84 +6,70 @@ import './Tapped.css';
 const Tapped = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [itemsData, setItemsData] = useState({});
-  const [itemCodes, setItemCodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [availableColors, setAvailableColors] = useState([]);
   const [editMode, setEditMode] = useState(false);
-  const [showInStock, setShowInStock] = useState(false);
-  const [showOutOfStock, setShowOutOfStock] = useState(false);
+  const [editedData, setEditedData] = useState({}); // To track changes in edit mode
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchItemsData = async () => {
       try {
-        // Fetch item codes
-        const itemCodesSnapshot = await getDocs(collection(db, 'itemCodes'));
-        const codes = itemCodesSnapshot.docs.map(doc => doc.data().code);
-
-        codes.sort((a, b) => {
-          const aIsNum = /^\d+$/.test(a);
-          const bIsNum = /^\d+$/.test(b);
-          const aHasNum = /\d/.test(a);
-          const bHasNum = /\d/.test(b);
-
-          if (aIsNum && bIsNum) return parseInt(a) - parseInt(b);
-          if (aIsNum) return -1;
-          if (bIsNum) return 1;
-          if (aHasNum && bHasNum) return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-          if (aHasNum) return -1;
-          if (bHasNum) return 1;
-          return a.localeCompare(b);
-        });
-
-        setItemCodes(codes);
-
-        // Fetch colors
-        const colorsSnapshot = await getDocs(collection(db, 'colors'));
-        const colors = colorsSnapshot.docs.map(doc => doc.data().color);
-        setAvailableColors(colors);
-
-        // Fetch Tapped data
-        const tappedSnapshot = await getDocs(collection(db, 'Tapping'));
-        const data = Object.fromEntries(
-          codes.map(code => [code, { itemCode: code, tapedQuantities: {} }])
-        );
-
-        tappedSnapshot.forEach((doc) => {
+        const querySnapshot = await getDocs(collection(db, 'Tapping'));
+        const data = {};
+        querySnapshot.forEach((doc) => {
           const docData = doc.data();
           if (docData.itemCode && docData.tapedQuantities) {
-            data[docData.itemCode] = docData;
+            if (!data[docData.itemCode]) {
+              data[docData.itemCode] = { tapedQuantities: {} };
+            }
+            Object.entries(docData.tapedQuantities).forEach(([color, quantity]) => {
+              if (!data[docData.itemCode].tapedQuantities[color]) {
+                data[docData.itemCode].tapedQuantities[color] = 0;
+              }
+              data[docData.itemCode].tapedQuantities[color] += quantity;
+            });
           }
         });
-
         setItemsData(data);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching Tapped data:", error);
         setLoading(false);
       }
     };
 
-    fetchData();
+    const fetchColors = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'colors'));
+        const colors = [];
+        querySnapshot.forEach((doc) => {
+          colors.push(doc.data().color);
+        });
+        setAvailableColors(colors);
+      } catch (error) {
+        console.error("Error fetching colors:", error);
+      }
+    };
+
+    fetchItemsData();
+    fetchColors();
   }, []);
 
+  useEffect(() => {
+    // Initialize editedData with the current itemsData
+    setEditedData(Object.fromEntries(
+      Object.entries(itemsData).map(([itemCode, data]) => [
+        itemCode,
+        { ...data.tapedQuantities }
+      ])
+    ));
+  }, [itemsData]);
+
   const filteredItems = useMemo(() => {
-    return itemCodes.filter(itemCode => {
-      const itemData = itemsData[itemCode];
-      if (!itemData) return false;
-
-      const matchesSearch = itemCode.toLowerCase().includes(searchTerm.toLowerCase());
-      const isInStock = Object.values(itemData.tapedQuantities).some(quantity => quantity && quantity > 0);
-      const isOutOfStock = Object.values(itemData.tapedQuantities).every(quantity => !quantity || quantity === 0);
-
-      if (showInStock && !showOutOfStock) {
-        return matchesSearch && isInStock;
-      } else if (showOutOfStock && !showInStock) {
-        return matchesSearch && isOutOfStock;
-      } else {
-        return matchesSearch;
-      }
-    });
-  }, [searchTerm, itemCodes, itemsData, showInStock, showOutOfStock]);
+    return Object.entries(itemsData).filter(([itemCode]) =>
+      itemCode.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, itemsData]);
 
   const handleEditClick = () => setEditMode(prev => !prev);
 
@@ -91,14 +77,11 @@ const Tapped = () => {
     const parsedValue = parseInt(value, 10);
     const newValue = isNaN(parsedValue) ? '' : Math.max(0, parsedValue);
 
-    setItemsData(prevData => ({
+    setEditedData(prevData => ({
       ...prevData,
       [itemCode]: {
         ...prevData[itemCode],
-        tapedQuantities: {
-          ...prevData[itemCode].tapedQuantities,
-          [color]: newValue,
-        },
+        [color]: newValue,
       },
     }));
   };
@@ -106,14 +89,23 @@ const Tapped = () => {
   const saveChanges = async () => {
     try {
       await Promise.all(
-        Object.entries(itemsData).map(async ([itemCode, data]) => {
+        Object.entries(editedData).map(async ([itemCode, updatedQuantities]) => {
           const itemRef = doc(db, 'Tapping', itemCode);
-          const tapedQuantities = Object.fromEntries(
-            Object.entries(data.tapedQuantities)
-              .filter(([_, value]) => value !== '')
-              .map(([color, value]) => [color, Math.max(0, parseInt(value, 10))])
-          );
-          await setDoc(itemRef, { itemCode, tapedQuantities }, { merge: true });
+
+          // Get current data from Firestore
+          const currentData = itemsData[itemCode] || { tapedQuantities: {} };
+
+          // Only update modified fields
+          const changes = {};
+          Object.entries(updatedQuantities).forEach(([color, newValue]) => {
+            if (newValue !== currentData.tapedQuantities[color]) {
+              changes[color] = newValue;
+            }
+          });
+
+          if (Object.keys(changes).length > 0) {
+            await setDoc(itemRef, { itemCode, tapedQuantities: changes }, { merge: true });
+          }
         })
       );
       alert('Changes saved successfully!');
@@ -125,25 +117,11 @@ const Tapped = () => {
   };
 
   const getCellClass = (value) => {
-    if (!value) return "quantity-zero";
+    if (value === 0) return "quantity-zero";
     if (value > 0 && value < 5) return "quantity-low";
     if (value >= 5 && value < 10) return "quantity-medium";
     return "quantity-high";
   };
-
-  const toggleInStock = () => {
-    setShowInStock(prev => !prev);
-    setShowOutOfStock(false);
-  };
-
-  const toggleOutOfStock = () => {
-    setShowOutOfStock(prev => !prev);
-    setShowInStock(false);
-  };
-
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
 
   return (
     <div className="tapped-list">
@@ -162,18 +140,6 @@ const Tapped = () => {
           Save All Changes
         </button>
       )}
-      <button 
-        onClick={toggleInStock} 
-        className={`filter-button ${showInStock ? 'active' : ''}`}
-      >
-        In-Stock
-      </button>
-      <button 
-        onClick={toggleOutOfStock} 
-        className={`filter-button ${showOutOfStock ? 'active' : ''}`}
-      >
-        Out of Stock
-      </button>
       <table className="excel-table">
         <thead>
           <tr>
@@ -184,34 +150,40 @@ const Tapped = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredItems.length > 0 ? (
-            filteredItems.map((itemCode) => (
-              <tr key={itemCode}>
-                <td className="item-code">{itemCode}</td>
-                {availableColors.map((color) => {
-                  const quantity = itemsData[itemCode]?.tapedQuantities?.[color] || '';
-                  return (
-                    <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
-                      {editMode ? (
-                        <input
-                          type="number"
-                          value={quantity}
-                          onChange={(e) => handleQuantityChange(itemCode, color, e.target.value)}
-                          min="0"
-                          className="quantity-input"
-                        />
-                      ) : (
-                        quantity || 0
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))
-          ) : (
+          {loading ? (
             <tr>
-              <td colSpan={availableColors.length + 1} className="no-item-found">No items found</td>
+              <td colSpan={availableColors.length + 1} className="loading">Loading...</td>
             </tr>
+          ) : (
+            filteredItems.length > 0 ? (
+              filteredItems.map(([itemCode, data]) => (
+                <tr key={itemCode}>
+                  <td className="item-code">{itemCode}</td>
+                  {availableColors.map((color) => {
+                    const quantity = editMode ? editedData[itemCode]?.[color] || 0 : data.tapedQuantities[color] || 0;
+                    return (
+                      <td key={`${itemCode}-${color}`} className={`quantity ${getCellClass(quantity)}`}>
+                        {editMode ? (
+                          <input
+                            type="number"
+                            value={quantity}
+                            onChange={(e) => handleQuantityChange(itemCode, color, e.target.value)}
+                            min="0"
+                            className="quantity-input"
+                          />
+                        ) : (
+                          quantity
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={availableColors.length + 1} className="no-item-found">No items found</td>
+              </tr>
+            )
           )}
         </tbody>
       </table>
