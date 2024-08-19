@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './AddItem.css';
-import { addDoc, collection, getDocs, updateDoc, query, where } from 'firebase/firestore';
+import { setDoc, doc, getDoc, collection, getDocs, updateDoc, query, where } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 
 const AddItem = () => {
@@ -78,32 +78,26 @@ const AddItem = () => {
       return;
     }
 
-    const newItem = {
-      date: currentDate,
-      itemCode,
-      inStock: colorsAvailable.some(color => color.quantity > 0),
-      stockByColor: colorsAvailable.reduce((acc, color) => {
-        if (color.quantity > 0) {
-          acc[color.colorName] = color.quantity;
-        }
-        return acc;
-      }, {}),
-    };
+    const newStockByColor = colorsAvailable.reduce((acc, color) => {
+      if (color.quantity > 0) {
+        acc[color.colorName] = color.quantity;
+      }
+      return acc;
+    }, {});
 
     try {
-      const cuttingQuery = query(collection(db, 'Cutting'), where('itemCode', '==', itemCode));
-      const cuttingSnapshot = await getDocs(cuttingQuery);
+      const cuttingDocRef = doc(db, 'Cutting', itemCode);
+      const cuttingDocSnap = await getDoc(cuttingDocRef);
 
-      if (!cuttingSnapshot.empty) {
-        const existingDoc = cuttingSnapshot.docs[0];
-        const existingItem = existingDoc.data();
+      if (cuttingDocSnap.exists()) {
+        const existingItem = cuttingDocSnap.data();
         const updatedStockByColor = { ...existingItem.stockByColor };
 
-        colorsAvailable.forEach(color => {
-          updatedStockByColor[color.colorName] = (updatedStockByColor[color.colorName] || 0) + color.quantity;
+        Object.entries(newStockByColor).forEach(([color, quantity]) => {
+          updatedStockByColor[color] = (updatedStockByColor[color] || 0) + quantity;
         });
 
-        await updateDoc(existingDoc.ref, {
+        await updateDoc(cuttingDocRef, {
           stockByColor: updatedStockByColor,
           date: currentDate,
           inStock: Object.values(updatedStockByColor).some(qty => qty > 0)
@@ -111,7 +105,14 @@ const AddItem = () => {
 
         console.log('Existing item updated in Cutting:', itemCode);
       } else {
-        await addDoc(collection(db, "Cutting"), newItem);
+        const newItem = {
+          date: currentDate,
+          itemCode,
+          inStock: true,
+          stockByColor: newStockByColor,
+        };
+
+        await setDoc(cuttingDocRef, newItem);
         console.log('New item added to Cutting:', newItem);
       }
 
@@ -121,9 +122,9 @@ const AddItem = () => {
       const updatePromises = workSnapshot.docs.map(doc => {
         const workItem = doc.data().newItem;
         const updatedStockByColor = { ...workItem.stockByColor };
-        colorsAvailable.forEach(color => {
-          if (updatedStockByColor[color.colorName] >= color.quantity) {
-            updatedStockByColor[color.colorName] -= color.quantity;
+        Object.entries(newStockByColor).forEach(([color, quantity]) => {
+          if (updatedStockByColor[color] >= quantity) {
+            updatedStockByColor[color] -= quantity;
           }
         });
         return updateDoc(doc.ref, { 'newItem.stockByColor': updatedStockByColor });

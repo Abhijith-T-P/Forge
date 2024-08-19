@@ -1,8 +1,6 @@
-// TapePage.jsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import './TapePage.css';
-import { getDocs, collection, query, where, writeBatch, doc } from 'firebase/firestore';
+import { getDocs, collection, query, where, writeBatch, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 
 const TapePage = () => {
@@ -17,7 +15,6 @@ const TapePage = () => {
     const today = new Date();
     setCurrentDate(today.toISOString().split('T')[0]);
 
-    // Fetch item codes from the Cutting collection
     const fetchItemCodes = async () => {
       try {
         const cuttingSnapshot = await getDocs(collection(db, 'Cutting'));
@@ -47,15 +44,10 @@ const TapePage = () => {
           const itemData = doc.data();
 
           if (itemData.stockByColor && typeof itemData.stockByColor === 'object') {
-            console.log("Fetched item data:", itemData);
-
-            // Aggregate stock by color
             Object.entries(itemData.stockByColor).forEach(([color, quantity]) => {
               const currentQuantity = aggregatedStockByColor[color] || 0;
               aggregatedStockByColor[color] = currentQuantity + (typeof quantity === 'string' ? parseInt(quantity, 10) : quantity);
             });
-
-            console.log("Aggregated Stock by Color:", aggregatedStockByColor);
 
             setSelectedItem({
               ...itemData,
@@ -92,10 +84,8 @@ const TapePage = () => {
     if (!selectedItem) return;
 
     try {
-      // Create a batch instance
       const batch = writeBatch(db);
 
-      // Fetch all Cutting documents for the given item code
       const cuttingQuery = query(collection(db, "Cutting"), where("itemCode", "==", itemCode));
       const cuttingSnapshot = await getDocs(cuttingQuery);
 
@@ -111,47 +101,31 @@ const TapePage = () => {
             updatedItemStockByColor[color] = Math.max(currentQuantity - parseInt(quantity, 10), 0);
           });
 
-          // Update the Cutting document in the batch
           batch.update(cuttingRef, { stockByColor: updatedItemStockByColor });
         });
 
-        // Check if a Tapping document already exists for this itemCode and date
-        const tappingQuery = query(
-          collection(db, "Tapping"),
-          where("itemCode", "==", itemCode),
-          where("date", "==", currentDate)
-        );
-        const tappingSnapshot = await getDocs(tappingQuery);
-
-        let tappingRef;
+        // Use itemCode as the document ID for the Tapping collection
+        const tappingRef = doc(db, "Tapping", itemCode);
+        const tappingDoc = await getDoc(tappingRef);
+        
         let existingTapedQuantities = {};
-
-        if (!tappingSnapshot.empty) {
-          // Update existing Tapping document
-          tappingRef = tappingSnapshot.docs[0].ref;
-          existingTapedQuantities = tappingSnapshot.docs[0].data().tapedQuantities || {};
-        } else {
-          // Create new Tapping document
-          tappingRef = doc(collection(db, "Tapping"));
+        if (tappingDoc.exists()) {
+          existingTapedQuantities = tappingDoc.data().tapedQuantities || {};
         }
 
-        // Merge existing and new taped quantities
         const mergedTapedQuantities = { ...existingTapedQuantities };
         Object.entries(tapedQuantities).forEach(([color, quantity]) => {
           mergedTapedQuantities[color] = (parseInt(mergedTapedQuantities[color], 10) || 0) + parseInt(quantity, 10);
         });
 
-        // Prepare tapping data
         const tappingData = {
-          date: currentDate,
           itemCode: itemCode,
           tapedQuantities: mergedTapedQuantities,
+          lastUpdated: currentDate,
         };
 
-        // Set or update the Tapping document in the batch
         batch.set(tappingRef, tappingData, { merge: true });
 
-        // Commit the batch
         await batch.commit();
 
         console.log('Stock updated in Cutting and Tapping');
@@ -160,7 +134,6 @@ const TapePage = () => {
         setTapedQuantities({});
         setFeedbackMessage("Stock moved to tape and updated successfully!");
 
-        // Fade out feedback message after 2 seconds
         setTimeout(() => {
           setFeedbackMessage('');
         }, 2000);

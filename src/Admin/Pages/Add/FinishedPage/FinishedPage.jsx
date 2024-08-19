@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './FinishedPage.css';
-import { getDocs, collection, query, where, writeBatch, doc } from 'firebase/firestore';
+import { getDocs, collection, query, where, writeBatch, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 
 const FinishedPage = () => {
@@ -15,7 +15,6 @@ const FinishedPage = () => {
     const today = new Date();
     setCurrentDate(today.toISOString().split('T')[0]);
 
-    // Fetch item codes from the Tapping collection
     const fetchItemCodes = async () => {
       try {
         const tappingSnapshot = await getDocs(collection(db, 'Tapping'));
@@ -46,15 +45,10 @@ const FinishedPage = () => {
           const itemData = doc.data();
 
           if (itemData.tapedQuantities && typeof itemData.tapedQuantities === 'object') {
-            console.log("Fetched item data:", itemData);
-
-            // Aggregate stock by color
             Object.entries(itemData.tapedQuantities).forEach(([color, quantity]) => {
               const currentQuantity = aggregatedStockByColor[color] || 0;
               aggregatedStockByColor[color] = currentQuantity + (typeof quantity === 'string' ? parseInt(quantity, 10) : quantity);
             });
-
-            console.log("Aggregated Stock by Color:", aggregatedStockByColor);
 
             setSelectedItem({
               ...itemData,
@@ -91,10 +85,8 @@ const FinishedPage = () => {
     if (!selectedItem) return;
 
     try {
-      // Create a batch instance
       const batch = writeBatch(db);
 
-      // Fetch all Tapping documents for the given item code
       const tappingQuery = query(collection(db, "Tapping"), where("itemCode", "==", itemCode));
       const tappingSnapshot = await getDocs(tappingQuery);
 
@@ -112,51 +104,34 @@ const FinishedPage = () => {
             const subtractQuantity = Math.min(currentQuantity, parseInt(quantity, 10));
             updatedItemTapedQuantities[color] = Math.max(currentQuantity - subtractQuantity, 0);
 
-            // Keep track of total subtracted quantities
             totalSubtracted[color] = (totalSubtracted[color] || 0) + subtractQuantity;
           });
 
-          // Update the Tapping document in the batch
           batch.update(tappingRef, { tapedQuantities: updatedItemTapedQuantities });
         });
 
-        // Check if a Finished document already exists for this itemCode and date
-        const finishedQuery = query(
-          collection(db, "Finished"),
-          where("itemCode", "==", itemCode),
-          where("date", "==", currentDate)
-        );
-        const finishedSnapshot = await getDocs(finishedQuery);
-
-        let finishedRef;
+        // Use itemCode as the document ID for the Finished collection
+        const finishedRef = doc(db, "Finished", itemCode);
+        const finishedDoc = await getDoc(finishedRef);
+        
         let existingFinishedQuantities = {};
-
-        if (!finishedSnapshot.empty) {
-          // Update existing Finished document
-          finishedRef = finishedSnapshot.docs[0].ref;
-          existingFinishedQuantities = finishedSnapshot.docs[0].data().finishedQuantities || {};
-        } else {
-          // Create new Finished document
-          finishedRef = doc(collection(db, "Finished"));
+        if (finishedDoc.exists()) {
+          existingFinishedQuantities = finishedDoc.data().finishedQuantities || {};
         }
 
-        // Merge existing and new finished quantities
         const mergedFinishedQuantities = { ...existingFinishedQuantities };
         Object.entries(totalSubtracted).forEach(([color, quantity]) => {
           mergedFinishedQuantities[color] = (parseInt(mergedFinishedQuantities[color], 10) || 0) + quantity;
         });
 
-        // Prepare finished data
         const finishedData = {
-          date: currentDate,
           itemCode: itemCode,
           finishedQuantities: mergedFinishedQuantities,
+          lastUpdated: currentDate,
         };
 
-        // Set or update the Finished document in the batch
         batch.set(finishedRef, finishedData, { merge: true });
 
-        // Commit the batch
         await batch.commit();
 
         console.log('Stock updated in Tapping and Finished');
@@ -165,7 +140,6 @@ const FinishedPage = () => {
         setFinishedQuantities({});
         setFeedbackMessage("Stock moved to finished and updated successfully!");
 
-        // Hide the feedback message after 2 seconds
         setTimeout(() => {
           setFeedbackMessage('');
         }, 2000);
