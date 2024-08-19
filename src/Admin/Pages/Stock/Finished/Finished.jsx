@@ -31,8 +31,11 @@ const Finished = () => {
           }
         });
 
+        // Convert Set to Array and sort colors alphabetically
+        const sortedColors = [...allColors].sort();
+
         setItemsData(data);
-        setAvailableColors([...allColors]);
+        setAvailableColors(sortedColors); // Set sorted colors
         setOriginalData(originalDataMap); // Set original data state
         setLoading(false);
       } catch (error) {

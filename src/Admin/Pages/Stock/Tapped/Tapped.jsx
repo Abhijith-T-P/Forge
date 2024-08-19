@@ -45,6 +45,10 @@ const Tapped = () => {
         querySnapshot.forEach((doc) => {
           colors.push(doc.data().color);
         });
+
+        // Sort colors alphabetically
+        colors.sort((a, b) => a.localeCompare(b));
+
         setAvailableColors(colors);
       } catch (error) {
         console.error("Error fetching colors:", error);

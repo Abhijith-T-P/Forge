@@ -40,6 +40,10 @@ const Cutting = () => {
         // Fetch colors
         const colorsSnapshot = await getDocs(collection(db, 'colors'));
         const colors = colorsSnapshot.docs.map(doc => doc.data().color);
+
+        // Sort colors alphabetically
+        colors.sort((a, b) => a.localeCompare(b));
+
         setAvailableColors(colors);
 
         // Fetch Cutting data
