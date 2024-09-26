@@ -180,17 +180,32 @@ const Finished = () => {
         <thead>
           <tr>
             <th>ITEM</th>
+            <th>Min</th>
             {availableColors.map(color => (
               <th key={color}>{color}</th>
             ))}
-            <th>Min</th>
           </tr>
         </thead>
         <tbody>
           {filteredItems.length > 0 ? (
             filteredItems.map(({ itemCode, quantities, min }) => (
               <tr key={itemCode}>
+                
                 <td className="item-code">{itemCode}</td>
+                <td>
+                  {editMode ? (
+                    <input
+                      type="text"
+                      value={min}
+                      onChange={(e) => handleMinChange(itemCode, e.target.value)}
+                      className="quantity-input"
+                      pattern="\d*"
+                      inputMode="numeric"
+                    />
+                  ) : (
+                    min
+                  )}
+                </td>
                 {availableColors.map((color) => {
                   const quantity = quantities[color] || 0;
                   return (
@@ -212,20 +227,7 @@ const Finished = () => {
                     </td>
                   );
                 })}
-                <td>
-                  {editMode ? (
-                    <input
-                      type="text"
-                      value={min}
-                      onChange={(e) => handleMinChange(itemCode, e.target.value)}
-                      className="quantity-input"
-                      pattern="\d*"
-                      inputMode="numeric"
-                    />
-                  ) : (
-                    min
-                  )}
-                </td>
+                
               </tr>
             ))
           ) : (
