@@ -9,7 +9,7 @@ const Finished = () => {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [filter, setFilter] = useState('all');
-  const [originalData, setOriginalData] = useState({}); // To store the original data
+  const [originalData, setOriginalData] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -17,7 +17,7 @@ const Finished = () => {
         const finishedSnapshot = await getDocs(collection(db, 'Finished'));
         const data = [];
         const allColors = new Set();
-        const originalDataMap = {}; // To store original data for comparison
+        const originalDataMap = {};
 
         finishedSnapshot.forEach((doc) => {
           const docData = doc.data();
@@ -25,18 +25,21 @@ const Finished = () => {
             data.push({
               itemCode: docData.itemCode,
               quantities: docData.finishedQuantities,
+              min: docData.min || 0,
             });
             Object.keys(docData.finishedQuantities).forEach(color => allColors.add(color));
-            originalDataMap[docData.itemCode] = docData.finishedQuantities; // Save original data
+            originalDataMap[docData.itemCode] = { 
+              finishedQuantities: docData.finishedQuantities,
+              min: docData.min || 0,
+            };
           }
         });
 
-        // Convert Set to Array and sort colors alphabetically
         const sortedColors = [...allColors].sort();
 
         setItemsData(data);
-        setAvailableColors(sortedColors); // Set sorted colors
-        setOriginalData(originalDataMap); // Set original data state
+        setAvailableColors(sortedColors);
+        setOriginalData(originalDataMap);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -55,43 +58,59 @@ const Finished = () => {
     setItemsData(prevData => {
       return prevData.map(item => {
         if (item.itemCode === itemCode) {
-          // Update only the changed color's quantity
           const updatedQuantities = { ...item.quantities, [color]: numValue };
-
-          return {
-            ...item,
-            quantities: updatedQuantities
-          };
+          return { ...item, quantities: updatedQuantities };
         }
         return item;
       });
     });
   };
 
+  const handleMinChange = async (itemCode, value) => {
+    // Only allow numeric input
+    const numericValue = value.replace(/[^0-9]/g, '');
+    const numValue = numericValue === '' ? 0 : parseInt(numericValue, 10);
+
+    setItemsData(prevData => {
+      return prevData.map(item => {
+        if (item.itemCode === itemCode) {
+          return { ...item, min: numValue };
+        }
+        return item;
+      });
+    });
+
+    try {
+      const itemRef = doc(db, 'Finished', itemCode);
+      await updateDoc(itemRef, { min: numValue });
+    } catch (error) {
+      console.error("Error updating min value:", error);
+    }
+  };
+
   const saveChanges = async () => {
     try {
       await Promise.all(
-        itemsData.map(async ({ itemCode, quantities }) => {
+        itemsData.map(async ({ itemCode, quantities, min }) => {
           const itemRef = doc(db, 'Finished', itemCode);
 
-          // Fetch existing data from Firestore
           const itemSnapshot = await getDoc(itemRef);
           const existingData = itemSnapshot.data();
           const existingQuantities = existingData?.finishedQuantities || {};
 
-          // Create an update object with unchanged fields preserved
           const updatedQuantities = { ...existingQuantities };
 
-          // Update only fields where the value has changed
           Object.keys(quantities).forEach(color => {
-            if (quantities[color] !== originalData[itemCode]?.[color]) {
+            if (quantities[color] !== originalData[itemCode]?.finishedQuantities[color]) {
               updatedQuantities[color] = quantities[color];
             }
           });
 
-          // Perform the update only if there are changes
-          if (Object.keys(updatedQuantities).length > 0) {
-            await updateDoc(itemRef, { finishedQuantities: updatedQuantities });
+          if (Object.keys(updatedQuantities).length > 0 || min !== originalData[itemCode]?.min) {
+            await updateDoc(itemRef, { 
+              finishedQuantities: updatedQuantities,
+              min: min,
+            });
           }
         })
       );
@@ -171,11 +190,12 @@ const Finished = () => {
             {availableColors.map(color => (
               <th key={color}>{color}</th>
             ))}
+            <th>Min</th>
           </tr>
         </thead>
         <tbody>
           {filteredItems.length > 0 ? (
-            filteredItems.map(({ itemCode, quantities }) => (
+            filteredItems.map(({ itemCode, quantities, min }) => (
               <tr key={itemCode}>
                 <td className="item-code">{itemCode}</td>
                 {availableColors.map((color) => {
@@ -199,11 +219,21 @@ const Finished = () => {
                     </td>
                   );
                 })}
+                <td>
+                  <input
+                    type="text"
+                    value={min}
+                    onChange={(e) => handleMinChange(itemCode, e.target.value)}
+                    className="quantity-input"
+                    pattern="\d*"
+                    inputMode="numeric"
+                  />
+                </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={availableColors.length + 1} className="no-item-found">No items found</td>
+              <td colSpan={availableColors.length + 2} className="no-item-found">No items found</td>
             </tr>
           )}
         </tbody>
