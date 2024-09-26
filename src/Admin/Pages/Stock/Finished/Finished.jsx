@@ -66,7 +66,7 @@ const Finished = () => {
     });
   };
 
-  const handleMinChange = async (itemCode, value) => {
+  const handleMinChange = (itemCode, value) => {
     // Only allow numeric input
     const numericValue = value.replace(/[^0-9]/g, '');
     const numValue = numericValue === '' ? 0 : parseInt(numericValue, 10);
@@ -79,13 +79,6 @@ const Finished = () => {
         return item;
       });
     });
-
-    try {
-      const itemRef = doc(db, 'Finished', itemCode);
-      await updateDoc(itemRef, { min: numValue });
-    } catch (error) {
-      console.error("Error updating min value:", error);
-    }
   };
 
   const saveChanges = async () => {
@@ -220,14 +213,18 @@ const Finished = () => {
                   );
                 })}
                 <td>
-                  <input
-                    type="text"
-                    value={min}
-                    onChange={(e) => handleMinChange(itemCode, e.target.value)}
-                    className="quantity-input"
-                    pattern="\d*"
-                    inputMode="numeric"
-                  />
+                  {editMode ? (
+                    <input
+                      type="text"
+                      value={min}
+                      onChange={(e) => handleMinChange(itemCode, e.target.value)}
+                      className="quantity-input"
+                      pattern="\d*"
+                      inputMode="numeric"
+                    />
+                  ) : (
+                    min
+                  )}
                 </td>
               </tr>
             ))
